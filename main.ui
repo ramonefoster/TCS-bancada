@@ -6,25 +6,25 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>556</width>
+    <width>570</width>
     <height>530</height>
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
   <property name="minimumSize">
    <size>
-    <width>556</width>
+    <width>570</width>
     <height>530</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>556</width>
+    <width>570</width>
     <height>530</height>
    </size>
   </property>
@@ -301,7 +301,7 @@
       <x>190</x>
       <y>10</y>
       <width>131</width>
-      <height>281</height>
+      <height>291</height>
      </rect>
     </property>
     <property name="title">
@@ -795,7 +795,7 @@
    <widget class="QLabel" name="label_20">
     <property name="geometry">
      <rect>
-      <x>400</x>
+      <x>420</x>
       <y>290</y>
       <width>131</width>
       <height>201</height>
@@ -861,9 +861,9 @@
     <property name="geometry">
      <rect>
       <x>330</x>
-      <y>10</y>
+      <y>20</y>
       <width>211</width>
-      <height>241</height>
+      <height>231</height>
      </rect>
     </property>
     <property name="acceptDrops">
@@ -995,10 +995,10 @@
    <widget class="QGroupBox" name="groupBox_4">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>370</y>
+      <x>190</x>
+      <y>310</y>
       <width>221</width>
-      <height>81</height>
+      <height>71</height>
      </rect>
     </property>
     <property name="font">
@@ -1010,24 +1010,11 @@
     <property name="title">
      <string>Prog Status</string>
     </property>
-    <widget class="QLabel" name="label_6">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>20</y>
-       <width>81</width>
-       <height>16</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Prog Status</string>
-     </property>
-    </widget>
     <widget class="QLineEdit" name="txtProgStatus">
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>40</y>
+       <y>30</y>
        <width>201</width>
        <height>20</height>
       </rect>
@@ -1051,10 +1038,10 @@
    <widget class="QGroupBox" name="groupBox_3">
     <property name="geometry">
      <rect>
-      <x>240</x>
-      <y>290</y>
-      <width>151</width>
-      <height>161</height>
+      <x>10</x>
+      <y>360</y>
+      <width>171</width>
+      <height>111</height>
      </rect>
     </property>
     <property name="font">
@@ -1066,33 +1053,11 @@
     <property name="title">
      <string>Actions</string>
     </property>
-    <widget class="QPushButton" name="btnTracking">
-     <property name="geometry">
-      <rect>
-       <x>80</x>
-       <y>20</y>
-       <width>51</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">background-color: indianred</string>
-     </property>
-     <property name="text">
-      <string>OFF</string>
-     </property>
-    </widget>
     <widget class="QPushButton" name="btnPoint">
      <property name="geometry">
       <rect>
-       <x>40</x>
-       <y>50</y>
+       <x>10</x>
+       <y>20</y>
        <width>71</width>
        <height>31</height>
       </rect>
@@ -1123,8 +1088,8 @@
     <widget class="QPushButton" name="btnStop">
      <property name="geometry">
       <rect>
-       <x>40</x>
-       <y>90</y>
+       <x>10</x>
+       <y>60</y>
        <width>71</width>
        <height>31</height>
       </rect>
@@ -1142,32 +1107,10 @@
       <string>STOP</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="btnMoveRel">
-     <property name="geometry">
-      <rect>
-       <x>40</x>
-       <y>130</y>
-       <width>75</width>
-       <height>23</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">background-color: lightgrey</string>
-     </property>
-     <property name="text">
-      <string>Mover REL</string>
-     </property>
-    </widget>
     <widget class="QLabel" name="label_58">
      <property name="geometry">
       <rect>
-       <x>20</x>
+       <x>100</x>
        <y>20</y>
        <width>51</width>
        <height>16</height>
@@ -1184,6 +1127,93 @@
       <string>Tracking</string>
      </property>
     </widget>
+    <widget class="QPushButton" name="btnTracking">
+     <property name="geometry">
+      <rect>
+       <x>100</x>
+       <y>40</y>
+       <width>51</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: indianred</string>
+     </property>
+     <property name="text">
+      <string>OFF</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="groupBox_5">
+    <property name="geometry">
+     <rect>
+      <x>190</x>
+      <y>389</y>
+      <width>221</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="title">
+     <string>Indexer</string>
+    </property>
+    <widget class="QPushButton" name="btnMoveRel">
+     <property name="geometry">
+      <rect>
+       <x>150</x>
+       <y>30</y>
+       <width>61</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: lightgreen</string>
+     </property>
+     <property name="text">
+      <string>Move</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="txtIndexer">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>131</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Calibri Light</family>
+       <pointsize>9</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: lightgrey</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -1191,7 +1221,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>556</width>
+     <width>570</width>
      <height>21</height>
     </rect>
    </property>

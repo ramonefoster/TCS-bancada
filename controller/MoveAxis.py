@@ -5,7 +5,7 @@ import time
 
 class AHControll():
     def __init__(self):
-        self.porta = "COM5"
+        self.porta = "COM3"
         self.port=self.porta        
 
         self.result = self.comPorts()
@@ -16,7 +16,7 @@ class AHControll():
             self.ser = serial.Serial(
             port=self.porta,
             baudrate=9600,
-            timeout=10
+            timeout=1
             )
             self.ser.close()
             if self.ser.isOpen() == False:
@@ -30,6 +30,9 @@ class AHControll():
         else:
             print('Cannot connect to: ', self.porta)
             self.errorDome = True
+
+    def closePort(self):
+        self.ser.close()
 
     def comPorts(self):
             self.list = serial.tools.list_ports.comports()
@@ -50,7 +53,7 @@ class AHControll():
                     return(ack)    
                 else:
                     print("ProgStatus bug")
-                    print(ack)
+                    #print(ack)
                     return("+0 00 00.00 *0000000000000000")
             except Exception as e:
                 print(e)
@@ -119,12 +122,12 @@ class AHControll():
             ack = ''
             while '\r' not in ack:
                 ack += self.ser.read().decode()
-                if (time.time() - timeoutDome) > 10:
+                if (time.time() - timeoutDome) > 1:
                     self.ser.flushInput()
                     self.ser.flushOutput()
                     return ack
             print(ack)    
             return(ack)
 
-# AhThread = threading.Thread(target = AHControll, args=[])
-# AhThread.start()
+#AhThread = threading.Thread(target = AHControll, args=[])
+#AhThread.start()

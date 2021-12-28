@@ -39,7 +39,9 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.AHx.progErros()
     
     def moverRel(self):
-        self.AHx.mover_rel("00 00 15.00")
+        destRel = self.txtIndexer.text()
+        if len(destRel) > 2:
+            self.AHx.mover_rel(destRel)
 
     #stop any movement and abort slew
     def stop(self):
@@ -67,8 +69,10 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.txtPointOBJ.setText(nameObj)
         self.txtPointMag.setText(magObj)    
 
-    def loadBSCdefault(self):         
+    def loadBSCdefault(self):  
+        ##################################################       
         BSCfile = "C:\\Users\\User\\Documents\\BSC_08.txt"
+        ##################################################
         if BSCfile: 
             print(BSCfile)
             data = open(str(BSCfile), 'r')
@@ -193,6 +197,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         close.setText("Are you sure?")
         close.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
         close = close.exec()
+        self.AHx.closePort()
 
         if close == QMessageBox.Yes:            
             event.accept()
