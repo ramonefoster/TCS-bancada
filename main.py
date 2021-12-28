@@ -116,6 +116,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         #AH DATA
         global statbuf
         statbuf = self.AHx.progStatus()
+        self.txtProgStatus.setText(statbuf)
         if "*" in statbuf:
             self.txtCoordRA.setText(statbuf[0:11])
             if statbuf[13] == "1":

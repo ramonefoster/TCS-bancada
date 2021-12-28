@@ -126,5 +126,5 @@ class AHControll():
             print(ack)    
             return(ack)
 
-AhThread = threading.Thread(target = AHControll, args=[])
-AhThread.start()
+# AhThread = threading.Thread(target = AHControll, args=[])
+# AhThread.start()
