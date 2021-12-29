@@ -3,8 +3,9 @@ import threading
 import serial.tools.list_ports
 import time
 
-class TuboControll():
+class TuboControll(threading.Thread):
     def __init__(self, device):
+        threading.Thread.__init__(self)
         self.porta = "COM6"
         self.port=self.porta 
         #DOME 

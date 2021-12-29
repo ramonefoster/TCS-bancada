@@ -354,6 +354,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
 
     #simple timer (1s)
     def startTimer(self):
+        self.timerUpdate.stop()
         self.timerUpdate.start(1000)      
 
     def showDialog(self, msgError):

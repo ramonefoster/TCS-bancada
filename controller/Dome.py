@@ -3,12 +3,14 @@ import threading
 import serial.tools.list_ports
 import time
 
-class DomeControll():
+class DomeControll(threading.Thread):
     def __init__(self, device):
+        threading.Thread.__init__(self)
         self.porta = "COM6"
         self.port=self.porta 
         #DOME 
         self.device = device      
+        print(device)
 
         self.result = self.comPorts()
 
@@ -45,7 +47,7 @@ class DomeControll():
 
             return(self.connected)
 
-    def progStatus(self):    
+    def progStatus(self): 
         if self.errorDome:
             return("+0 00 00.00 *0000000000000000")
         else:        
