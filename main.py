@@ -9,6 +9,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import QMainWindow, QAction, qApp, QApplication, QStyle, QWidget, QLabel, QLineEdit, QTextEdit, QGridLayout, QMessageBox
 import controller.MoveAxis as AxisDevice
 import controller.Dome as Dome
+import controller.Tubo as Tubo
 
 pyQTfileName = "main.ui" 
 Ui_MainWindow, QtBaseClass = uic.loadUiType(pyQTfileName)
@@ -53,8 +54,6 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.btnLampOff.clicked.connect(self.domeFlatOff)
 
         self.timerUpdate = QTimer()
-        self.timerUpdate.timeout.connect(self.updateData)
-        self.startTimer()
 
         #precess
         self.btnPrecess.clicked.connect(self.selectToPrecess)
@@ -75,7 +74,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.DeviceOPD.DomeRAP()
     
     def domeStop(self):
-        self.DeviceOPD.stopDome()
+        self.DeviceOPD.prog_parar()
     
     def domeFlatOn(self):
         lampStat = self.DeviceOPD.DomeFlatLampON()
@@ -113,23 +112,34 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
             self.DeviceOPD.CloseShutter() 
 
     def connAH(self):
+        self.timerUpdate.timeout.connect(self.updateData)
+        self.startTimer()
         device = "AH"
         self.label_sideral.setText("Sideral")
+        self.label_manual.setText("Manual")  
         self.DeviceOPD = AxisDevice.AxisControll(device)
     
     def connDEC(self):
+        self.timerUpdate.timeout.connect(self.updateData)
+        self.startTimer()
         device = "DEC"
         self.label_sideral.setText("Sideral")
+        self.label_manual.setText("Manual")  
         self.DeviceOPD = AxisDevice.AxisControll(device)
     
     def connDome(self):
+        self.timerUpdate.timeout.connect(self.updateData)
+        self.startTimer()
         device = "CUP"
         self.label_sideral.setText("Trapeira")
+        self.label_manual.setText("Paravento")        
         self.DeviceOPD = Dome.DomeControll(device)
     
-    # def connTubo(self):
-    #     device = "TUBO"
-    #     self.DeviceOPD = EixoAH.AHControll(device)
+    def connTubo(self):
+        self.timerUpdate.timeout.connect(self.updateData)
+        self.startTimer()
+        device = "TUBO"
+        self.DeviceOPD = Tubo.TuboControll(device)
 
     def clearBits(self):
         self.DeviceOPD.progErros()
@@ -162,12 +172,14 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
     def selectToPrecess(self): 
         if "AH" in device:        
             nameObj = ([item.text().split("\t")[0].strip() for item in self.listWidget.selectedItems()])[0]
-            raObj = ([item.text().split("\t")[1].strip() for item in self.listWidget.selectedItems()])[0] 
-            self.setPrecess(nameObj, raObj)
+            raObj = ([item.text().split("\t")[1].strip() for item in self.listWidget.selectedItems()])[0]
+            if self.listWidget.selectedItems(): 
+                self.setPrecess(nameObj, raObj)
         if "DEC" in device:
             nameObj = ([item.text().split("\t")[0].strip() for item in self.listWidget_2.selectedItems()])[0]
             raObj = ([item.text().split("\t")[1].strip() for item in self.listWidget_2.selectedItems()])[0] 
-            self.setPrecess(nameObj, raObj)       
+            if self.listWidget.selectedItems(): 
+                self.setPrecess(nameObj, raObj)     
         
     
     #Precess object and check if its above the Horizon
@@ -183,7 +195,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         ##################################################       
         BSCfile = "C:\\Users\\User\\Documents\\BSC_08.txt"
         ##################################################
-        if BSCfile: 
+        if BSCfile and os.path.exists(BSCfile): 
             print(BSCfile)
             data = open(str(BSCfile), 'r')
             dataList = data.readlines()
@@ -230,8 +242,6 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
             else:
                 msg = "Ivalid DEC inputs"
                 self.showDialog(msg)
-            
-    
 
     #Update coordinates every 1s
     def updateData(self):
@@ -264,6 +274,10 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.AHstat()
             if "DEC" in device:
                 self.DECstat()
+            if "CUP" in device:
+                self.Domestat()
+            if "TUBO" in device:
+                self.Tubostat()
 
     def bitStats(self):
         if statbuf[13] == "1":
@@ -321,6 +335,12 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def DECstat(self):
         self.txtCoordDEC.setText(statbuf[0:11])
+    
+    def Domestat(self):
+        self.txtCoordDome.setText(statbuf[0:11])
+    
+    def Tubostat(self):
+        self.txtCoordTubo.setText(statbuf[0:11])
             
     def AHstat(self):        
         self.txtCoordRA.setText(statbuf[0:11])

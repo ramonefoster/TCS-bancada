@@ -158,7 +158,7 @@ class DomeControll():
                     
     def prog_parar(self):
         if not self.errorDome:
-            ret = 'ACK' in self.writeCommand(self.device+" PROG PARAR\r")
+            ret = 'ACK' in self.writeCommand(self.device+" DOMO PARAR\r")
             if ret:
                 stat = True
             else:
