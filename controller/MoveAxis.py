@@ -5,7 +5,7 @@ import time
 
 class AHControll():
     def __init__(self):
-        self.porta = "COM3"
+        self.porta = "COM6"
         self.port=self.porta        
 
         self.result = self.comPorts()
@@ -32,7 +32,8 @@ class AHControll():
             self.errorDome = True
 
     def closePort(self):
-        self.ser.close()
+        if self.ser:
+            self.ser.close()
 
     def comPorts(self):
             self.list = serial.tools.list_ports.comports()
@@ -44,7 +45,7 @@ class AHControll():
 
     def progStatus(self):    
         if self.errorDome:
-            return("offline", False, "0", "0", "0")
+            return("+0 00 00.00 *0000000000000000")
         else:        
             try:  
                 ack = self.writeCommand("AH PROG STATUS\r")
@@ -129,5 +130,5 @@ class AHControll():
             print(ack)    
             return(ack)
 
-#AhThread = threading.Thread(target = AHControll, args=[])
-#AhThread.start()
+AhThread = threading.Thread(target = AHControll, args=[])
+AhThread.start()

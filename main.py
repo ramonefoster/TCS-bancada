@@ -197,7 +197,6 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         close.setText("Are you sure?")
         close.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
         close = close.exec()
-        self.AHx.closePort()
 
         if close == QMessageBox.Yes:            
             event.accept()
