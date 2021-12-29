@@ -3,11 +3,11 @@ import threading
 import serial.tools.list_ports
 import time
 
-class AxisControll():
+class DomeControll():
     def __init__(self, device):
         self.porta = "COM6"
         self.port=self.porta 
-        #AH or DEC 
+        #DOME 
         self.device = device      
 
         self.result = self.comPorts()
@@ -62,23 +62,90 @@ class AxisControll():
                 print(e)
                 return("+0 00 00.00 *0000000000000000")
 
-    def mover_rap(self, position):
+    def moveCup(self, position):
         if not self.errorDome:
-            ret = 'ACK' in self.writeCommand(self.device+" EIXO MOVER_RAP = " + str(position) + "\r")
+            ret = 'ACK' in self.writeCommand(self.device+" DOMO MOVER = " + str(position) + "\r")
             if ret:
                 stat = True
             else:
                 stat = False
-            return stat 
+            return stat        
 
-    def mover_rel(self, position):
+    def openShutter(self):
         if not self.errorDome:
-            ret = 'ACK' in self.writeCommand(self.device+" EIXO MOVER_REL = " + str(position) + "\r")
+            bitTrap = self.progStatus()[4]
+            if bitTrap == "1" :
+                ret = 'ACK' in self.writeCommand(self.device+" TRAPEIRA ABRIR\r")
+                if ret:
+                    stat = True
+                else:
+                    stat = False
+                return stat           
+
+    def CloseShutter(self):
+        if not self.errorDome:
+            bitTrap = self.progStatus()[4]
+            if bitTrap == "1" :
+                ret = 'ACK' in self.writeCommand(self.device+" TRAPEIRA FECHAR\r")
+                if ret:
+                    stat = True
+                else:
+                    stat = False
+                return stat
+
+    def DomeCW(self):
+        if not self.errorDome:
+            ret = 'ACK' in self.writeCommand(self.device+" DOMO GIRAR_CW\r")
             if ret:
                 stat = True
             else:
                 stat = False
-            return stat                  
+            return stat
+
+    def DomeCCW(self):
+        if not self.errorDome:
+            ret = 'ACK' in self.writeCommand(self.device+" DOMO GIRAR_CCW\r")
+            if ret:
+                stat = True
+            else:
+                stat = False
+            return stat
+
+    def DomeJOG(self):
+        if not self.errorDome:
+            ret = 'ACK' in self.writeCommand(self.device+" DOMO LIGAR_JOG\r")
+            if ret:
+                stat = True
+            else:
+                stat = False
+            return stat
+
+    def DomeRAP(self):
+        if not self.errorDome:
+            ret = 'ACK' in self.writeCommand(self.device+" DOMO LIGAR_RAP\r")
+            if ret:
+                stat = True
+            else:
+                stat = False
+            return stat
+
+    def DomeFlatLampON(self):
+        if not self.errorDome:
+            ret = 'ACK' in self.writeCommand(self.device+" FLAT_WEAK LIGAR\r")
+            if ret:
+                stat = True
+            else:
+                stat = False
+            return stat
+            
+    def DomeFlatLampOFF(self):
+        if not self.errorDome:
+            ret = 'ACK' in self.writeCommand(self.device+" FLAT_WEAK DESLIGAR\r")
+            if ret:
+                stat = True
+            else:
+                stat = False
+            return stat
 
     def progErros(self):
         if not self.errorDome:
@@ -97,24 +164,6 @@ class AxisControll():
             else:
                 stat = False
             return stat
-
-    def sideral_ligar(self):
-        if not self.errorDome:
-            ret = 'ACK' in self.writeCommand(self.device+" SIDERAL LIGAR\r")
-            if ret:
-                stat = True
-            else:
-                stat = False
-            return stat
-
-    def sideral_desligar(self):
-        if not self.errorDome:
-            ret = 'ACK' in self.writeCommand(self.device+" SIDERAL DESLIGAR\r")
-            if ret:
-                stat = True
-            else:
-                stat = False
-            return stat    
             
     def writeCommand(self, cmd):
         if not self.errorDome:
@@ -132,5 +181,5 @@ class AxisControll():
             print(ack)    
             return(ack)
 
-AxisThread = threading.Thread(target = AxisControll, args=[])
-AxisThread.start()
+DomeThread = threading.Thread(target = DomeControll, args=[])
+DomeThread.start()
