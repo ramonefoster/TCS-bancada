@@ -4,9 +4,10 @@ import serial.tools.list_ports
 import time
 
 class AxisControll(threading.Thread):
-    def __init__(self, device):
+    def __init__(self, device, port, baund):
         threading.Thread.__init__(self)
-        self.porta = "COM5"
+        self.porta = port
+        self.baundRate = baund
         self.port=self.porta 
         #AH or DEC 
         self.device = device      
@@ -18,7 +19,7 @@ class AxisControll(threading.Thread):
         if self.porta in self.result:
             self.ser = serial.Serial(
             port=self.porta,
-            baudrate=9600,
+            baudrate=self.baundRate,
             timeout=1
             )
             self.ser.close()
@@ -57,7 +58,7 @@ class AxisControll(threading.Thread):
                     return(ack)    
                 else:
                     print("ProgStatus bug")
-                    #print(self.device)
+                    print(self.porta)
                     return("+0 00 00.00 *0000000000000000")
             except Exception as e:
                 print(e)

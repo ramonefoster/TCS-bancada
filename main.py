@@ -59,7 +59,6 @@ class SettingsWindow(baseSettings, formSettings):
         self.setting_variables.setValue("bsc", self.txtBSCpath.text())
         self.setting_variables.setValue("log", self.txtLogPath.text())
         
-    
     def ports(self):
         listP = serial.tools.list_ports.comports()
         connected = []
@@ -254,7 +253,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.device = "AH"
         self.label_sideral.setText("Sideral")
         self.label_manual.setText("Manual")  
-        self.DeviceOPD = AxisDevice.AxisControll(self.device)
+        self.DeviceOPD = AxisDevice.AxisControll(self.device, self.settingsWin.boxPort.currentText(), int(self.settingsWin.boxBaund.currentText()))
     
     def connDEC(self):
         self.timerUpdate.timeout.connect(self.updateData)
@@ -262,7 +261,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.device = "DEC"
         self.label_sideral.setText("Sideral")
         self.label_manual.setText("Manual")  
-        self.DeviceOPD = AxisDevice.AxisControll(self.device)
+        self.DeviceOPD = AxisDevice.AxisControll(self.device, self.settingsWin.boxPort.currentText(), int(self.settingsWin.boxBaund.currentText()))
     
     def connDome(self):
         self.timerUpdate.timeout.connect(self.updateData)
@@ -270,13 +269,13 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.device = "CUP"
         self.label_sideral.setText("Trapeira")
         self.label_manual.setText("Paravento")        
-        self.DeviceOPD = Dome.DomeControll(self.device)
+        self.DeviceOPD = AxisDevice.AxisControll(self.device, self.settingsWin.boxPort.currentText(), int(self.settingsWin.boxBaund.currentText()))
     
     def connTubo(self):
         self.timerUpdate.timeout.connect(self.updateData)
         self.startTimer()
         self.device = "TUBO"
-        self.DeviceOPD = Tubo.TuboControll(self.device)
+        self.DeviceOPD = AxisDevice.AxisControll(self.device, self.settingsWin.boxPort.currentText(), int(self.settingsWin.boxBaund.currentText()))
 
     def clearBits(self):
         self.DeviceOPD.progErros()
