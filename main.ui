@@ -51,7 +51,7 @@
      </font>
     </property>
     <property name="currentIndex">
-     <number>3</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="tab">
      <attribute name="title">
@@ -1451,7 +1451,7 @@
       <property name="title">
        <string>Pointing</string>
       </property>
-      <widget class="QLineEdit" name="txtPointRA_4">
+      <widget class="QLineEdit" name="txtFocoPos">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -1488,7 +1488,7 @@
         <string>Position</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="btnPoint_7">
+      <widget class="QPushButton" name="brnFocoMover">
        <property name="geometry">
         <rect>
          <x>50</x>
@@ -1668,7 +1668,7 @@
       <property name="title">
        <string>Espelhos</string>
       </property>
-      <widget class="QPushButton" name="btnStop_9">
+      <widget class="QPushButton" name="btnEspA">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -1690,7 +1690,7 @@
         <string>ESPELHO A</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="btnStop_10">
+      <widget class="QPushButton" name="btnEspB">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -1712,7 +1712,7 @@
         <string>ESPELHO B</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="btnStop_11">
+      <widget class="QPushButton" name="btnEspC">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -1753,7 +1753,7 @@
       <property name="title">
        <string>Rotator</string>
       </property>
-      <widget class="QPushButton" name="btnStop_12">
+      <widget class="QPushButton" name="btnRotLer">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -1775,7 +1775,7 @@
         <string>ROTATOR LER</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="btnStop_13">
+      <widget class="QPushButton" name="btnRotTest">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -1816,7 +1816,7 @@
       <property name="title">
        <string>Ventilador</string>
       </property>
-      <widget class="QPushButton" name="btnStop_14">
+      <widget class="QPushButton" name="btnFanON">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -1838,7 +1838,7 @@
         <string>LIGAR</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="btnStop_15">
+      <widget class="QPushButton" name="btnFanOFF">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -1879,7 +1879,7 @@
       <property name="title">
        <string>NE</string>
       </property>
-      <widget class="QPushButton" name="btnTuboStop_2">
+      <widget class="QPushButton" name="btnNEOFF">
        <property name="geometry">
         <rect>
          <x>10</x>
@@ -1901,7 +1901,7 @@
         <string>DESLIGAR</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="btnTuboStop_3">
+      <widget class="QPushButton" name="btnNEON">
        <property name="geometry">
         <rect>
          <x>10</x>
@@ -1942,7 +1942,7 @@
       <property name="title">
        <string>HE</string>
       </property>
-      <widget class="QPushButton" name="btnTuboStop_4">
+      <widget class="QPushButton" name="btnHEOFF">
        <property name="geometry">
         <rect>
          <x>10</x>
@@ -1964,7 +1964,7 @@
         <string>DESLIGAR</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="btnTuboStop_5">
+      <widget class="QPushButton" name="btnHEON">
        <property name="geometry">
         <rect>
          <x>10</x>
@@ -2005,7 +2005,7 @@
       <property name="title">
        <string>Foco</string>
       </property>
-      <widget class="QPushButton" name="btnStop_16">
+      <widget class="QPushButton" name="btnFocoUp">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -2027,7 +2027,7 @@
         <string>AUMENTAR</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="btnStop_17">
+      <widget class="QPushButton" name="btnFocoDown">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -2049,7 +2049,7 @@
         <string>DIMINUIR</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="btnStop_18">
+      <widget class="QPushButton" name="btnRefUp">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -2071,7 +2071,7 @@
         <string>REFINAR +</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="btnStop_19">
+      <widget class="QPushButton" name="btnRefDown">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -2767,7 +2767,7 @@
     <property name="title">
      <string>LOG</string>
     </property>
-    <widget class="QCheckBox" name="checkBox">
+    <widget class="QCheckBox" name="checkBoxLog">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -2807,7 +2807,7 @@
     <property name="title">
      <string>Setup</string>
     </property>
-    <addaction name="actionCOM_port"/>
+    <addaction name="actionSettings"/>
    </widget>
    <addaction name="menuOptions"/>
    <addaction name="menuSetup"/>
@@ -2818,7 +2818,7 @@
     <string>Limpar Bit Erros</string>
    </property>
   </action>
-  <action name="actionCOM_port">
+  <action name="actionSettings">
    <property name="text">
     <string>Settings...</string>
    </property>

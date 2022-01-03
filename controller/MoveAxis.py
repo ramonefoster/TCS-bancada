@@ -6,7 +6,7 @@ import time
 class AxisControll(threading.Thread):
     def __init__(self, device):
         threading.Thread.__init__(self)
-        self.porta = "COM6"
+        self.porta = "COM5"
         self.port=self.porta 
         #AH or DEC 
         self.device = device      
@@ -57,14 +57,14 @@ class AxisControll(threading.Thread):
                     return(ack)    
                 else:
                     print("ProgStatus bug")
-                    #print(ack)
+                    #print(self.device)
                     return("+0 00 00.00 *0000000000000000")
             except Exception as e:
                 print(e)
                 return("+0 00 00.00 *0000000000000000")
 
     def mover_rap(self, position):
-        if not self.errorDome:
+        if not self.errorDome:           
             ret = 'ACK' in self.writeCommand(self.device+" EIXO MOVER_RAP = " + str(position) + "\r")
             if ret:
                 stat = True

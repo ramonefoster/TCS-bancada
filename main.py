@@ -2,9 +2,10 @@ import sys, os
 import time
 import ephem
 import datetime
+import serial.tools.list_ports
 
-from PyQt5 import QtCore, QtGui, QtWidgets, uic
-from PyQt5.QtCore import QTimer, QDateTime, QObject, QThread, pyqtSignal, QUrl, pyqtSlot, Qt
+from PyQt5 import QtCore, QtGui, QtWidgets, uic, QtSerialPort
+from PyQt5.QtCore import QTimer, QDateTime, QObject, QThread, pyqtSignal, QUrl, pyqtSlot, Qt, QSettings
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import QMainWindow, QAction, qApp, QApplication, QStyle, QWidget, QLabel, QLineEdit, QTextEdit, QGridLayout, QMessageBox
 import controller.MoveAxis as AxisDevice
@@ -14,22 +15,81 @@ import controller.Tubo as Tubo
 pyQTfileName = "main.ui" 
 Ui_MainWindow, QtBaseClass = uic.loadUiType(pyQTfileName)
 
+SettingsUI = 'settings.ui'
+formSettings, baseSettings = uic.loadUiType(SettingsUI)
+
+class SettingsWindow(baseSettings, formSettings):
+    def __init__(self):
+        super(baseSettings, self).__init__()
+        self.setupUi(self)
+
+        listBaundRates = ['2400', '4800', '9600', '115200']
+        self.boxBaund.clear()
+        self.boxBaund.addItems(listBaundRates) 
+
+        listPorts = self.ports()
+        self.boxPort.clear()
+        self.boxPort.addItems(listPorts)
+
+        self.getSettingsValue() 
+
+        #load settings
+        self.txtLogPath.setText(self.setting_variables.value("log"))
+        self.txtBSCpath.setText(self.setting_variables.value("bsc"))
+        if (self.setting_variables.value("comport"))>0:
+            self.boxPort.setCurrentIndex(int(self.setting_variables.value("comport")))
+        else:
+            self.boxPort.setCurrentIndex(0)
+
+        if self.setting_variables.value("baund")>0:
+            self.boxBaund.setCurrentIndex(int(self.setting_variables.value("baund")))
+        else:
+            self.boxBaund.setCurrentIndex(0)
+
+        #butons
+        self.btnSaveSettings.clicked.connect(self.saveSettings)
+        self.btnCancelSettings.clicked.connect(self.close)
+
+    def getSettingsValue(self):
+        self.setting_variables = QSettings('my app', 'variables')
+    
+    def saveSettings(self):
+        self.setting_variables.setValue("comport", self.boxPort.currentIndex())
+        self.setting_variables.setValue("baund", self.boxBaund.currentIndex())
+        self.setting_variables.setValue("bsc", self.txtBSCpath.text())
+        self.setting_variables.setValue("log", self.txtLogPath.text())
+        
+    
+    def ports(self):
+        listP = serial.tools.list_ports.comports()
+        connected = []
+        for element in listP:
+            connected.append(element.device)
+
+        return(connected)
+    
+    def closeEvent(self, event):
+        event.accept()
+        
+
 class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self):
         QtWidgets.QMainWindow.__init__(self)
         Ui_MainWindow.__init__(self)
         self.setupUi(self)
+        self.settingsWin = SettingsWindow()
         
-        global device
-        device = "NONE"
+        self.device = "NONE"         
 
         #clear prog erros
         self.actionLimpar.triggered.connect(self.clearBits)
+        self.actionSettings.triggered.connect(self.openSettings)
 
         #connect devices
         self.btnStartAH.clicked.connect(self.connAH)
         self.btnStartDEC.clicked.connect(self.connDEC)
         self.btnStartDome.clicked.connect(self.connDome)
+        self.btnStartTubo.clicked.connect(self.connTubo)
 
         #AH buttons
         self.btnPoint.clicked.connect(self.point)
@@ -53,6 +113,24 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.btnLampON.clicked.connect(self.domeFlatOn)
         self.btnLampOff.clicked.connect(self.domeFlatOff)
 
+        #Tubo buttons
+        self.btnEspA.clicked.connect(self.espelho_a)
+        self.btnEspB.clicked.connect(self.espelho_b)
+        self.btnEspC.clicked.connect(self.espelho_c)
+        self.btnRotLer.clicked.connect(self.rotator_ler)
+        self.btnRotTest.clicked.connect(self.rotator_testar)
+        self.btnFanON.clicked.connect(self.fan_on)
+        self.btnFanOFF.clicked.connect(self.fan_off)
+        self.btnFocoUp.clicked.connect(self.foco_up)
+        self.btnFocoDown.clicked.connect(self.foco_down)
+        self.btnRefUp.clicked.connect(self.ref_up)
+        self.btnRefDown.clicked.connect(self.ref_down)
+        self.btnNEON.clicked.connect(self.ne_on)
+        self.btnNEOFF.clicked.connect(self.ne_off)
+        self.btnHEON.clicked.connect(self.he_on)
+        self.btnHEOFF.clicked.connect(self.he_off)
+        self.brnFocoMover.clicked.connect(self.he_off)
+
         self.timerUpdate = QTimer()
 
         #precess
@@ -61,6 +139,65 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.btnPrecess_2.clicked.connect(self.selectToPrecess)
         self.btnOpenBSCfile_2.clicked.connect(self.loadBSCdefault)
 
+    def openSettings(self, checked):
+        if self.settingsWin.isVisible():
+            self.settingsWin.hide()
+        else:
+            self.settingsWin.show()
+
+    #Tubo
+    def espelho_a(self):
+        self.DeviceOPD.espA()
+    
+    def espelho_b(self):
+        self.DeviceOPD.espB()
+    
+    def espelho_c(self):
+        self.DeviceOPD.espC()
+    
+    def rotator_ler(self):
+        self.DeviceOPD.rot_ler()
+
+    def rotator_testar(self):
+        self.DeviceOPD.rot_test()
+
+    def fan_on(self):
+        self.DeviceOPD.vent_on()
+
+    def fan_off(self):
+        self.DeviceOPD.vent_off()
+
+    def foco_up(self):
+        self.DeviceOPD.focoUp()
+
+    def foco_down(self):
+        self.DeviceOPD.focodOWN()
+
+    def ref_up(self):
+        self.DeviceOPD.focoRefPos()
+    
+    def ref_down(self):
+        self.DeviceOPD.focoRefNeg()
+    
+    def ne_on(self):
+        self.DeviceOPD.lampNEON()
+    
+    def ne_off(self):
+        self.DeviceOPD.lampNEOFF()
+
+    def he_on(self):
+        self.DeviceOPD.lampHEON()
+
+    def he_off(self):
+        self.DeviceOPD.lampHEOFF()
+    
+    def mover_foco(self):
+        if "TUBO" in self.device:
+            foco_pos = self.txtFocoPos.text()
+            if len(foco_pos) > 0 and foco_pos.isdigit():
+                self.DeviceOPD.mover_rel(foco_pos)
+        
+    #DOME
     def DomeCW(self):
         self.DeviceOPD.DomeCW()
     
@@ -114,42 +251,42 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
     def connAH(self):
         self.timerUpdate.timeout.connect(self.updateData)
         self.startTimer()
-        device = "AH"
+        self.device = "AH"
         self.label_sideral.setText("Sideral")
         self.label_manual.setText("Manual")  
-        self.DeviceOPD = AxisDevice.AxisControll(device)
+        self.DeviceOPD = AxisDevice.AxisControll(self.device)
     
     def connDEC(self):
         self.timerUpdate.timeout.connect(self.updateData)
         self.startTimer()
-        device = "DEC"
+        self.device = "DEC"
         self.label_sideral.setText("Sideral")
         self.label_manual.setText("Manual")  
-        self.DeviceOPD = AxisDevice.AxisControll(device)
+        self.DeviceOPD = AxisDevice.AxisControll(self.device)
     
     def connDome(self):
         self.timerUpdate.timeout.connect(self.updateData)
         self.startTimer()
-        device = "CUP"
+        self.device = "CUP"
         self.label_sideral.setText("Trapeira")
         self.label_manual.setText("Paravento")        
-        self.DeviceOPD = Dome.DomeControll(device)
+        self.DeviceOPD = Dome.DomeControll(self.device)
     
     def connTubo(self):
         self.timerUpdate.timeout.connect(self.updateData)
         self.startTimer()
-        device = "TUBO"
-        self.DeviceOPD = Tubo.TuboControll(device)
+        self.device = "TUBO"
+        self.DeviceOPD = Tubo.TuboControll(self.device)
 
     def clearBits(self):
         self.DeviceOPD.progErros()
     
     def moverRel(self):
-        if "AH" in device:
+        if "AH" in self.device:
             destRel = self.txtIndexer.text()
             if len(destRel) > 2:
                 self.DeviceOPD.mover_rel(destRel)
-        if "DEC" in device:
+        if "DEC" in self.device:
             destRel = self.txtIndexer_2.text()
             if len(destRel) > 2:
                 self.DeviceOPD.mover_rel(destRel)        
@@ -157,11 +294,11 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
     #stop any movement and abort slew
     def stop(self):
         self.DeviceOPD.prog_parar()
-        if "AH" in device:
+        if "AH" in self.device:
             self.DeviceOPD.sideral_desligar()
 
     def tracking(self):
-        if "AH" in device:
+        if "AH" in self.device:
             if statbuf[19] == "0":
                 self.DeviceOPD.sideral_ligar()
             elif statbuf[19] == "1":
@@ -170,12 +307,12 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
 
     #Grabs text from txt
     def selectToPrecess(self): 
-        if "AH" in device:        
+        if "AH" in self.device:        
             nameObj = ([item.text().split("\t")[0].strip() for item in self.listWidget.selectedItems()])[0]
             raObj = ([item.text().split("\t")[1].strip() for item in self.listWidget.selectedItems()])[0]
             if self.listWidget.selectedItems(): 
                 self.setPrecess(nameObj, raObj)
-        if "DEC" in device:
+        if "DEC" in self.device:
             nameObj = ([item.text().split("\t")[0].strip() for item in self.listWidget_2.selectedItems()])[0]
             raObj = ([item.text().split("\t")[1].strip() for item in self.listWidget_2.selectedItems()])[0] 
             if self.listWidget.selectedItems(): 
@@ -184,36 +321,40 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
     
     #Precess object and check if its above the Horizon
     def setPrecess(self, nameObj, raObj): 
-        if "AH" in device:
+        if "AH" in self.device:
             self.txtPointRA.setText(raObj)
             self.txtPointOBJ.setText(nameObj)
-        if "DEC" in device:
+        if "DEC" in self.device:
             self.txtPointDEC.setText(raObj)
             self.txtPointOBJ_2.setText(nameObj)
 
     def loadBSCdefault(self):  
-        ##################################################       
-        BSCfile = "C:\\Users\\User\\Documents\\BSC_08.txt"
         ##################################################
-        if BSCfile and os.path.exists(BSCfile): 
-            print(BSCfile)
+        BSCfile = self.settingsWin.txtBSCpath.text()       
+        #BSCfile = "C:\\Users\\User\\Documents\\BSC_08.txt"
+        ##################################################
+        if BSCfile and os.path.exists(BSCfile):             
             data = open(str(BSCfile), 'r')
             dataList = data.readlines()
-
-            if "AH" in device:
+            if "AH" in self.device:
                 self.listWidget.clear()
                 for eachLine in dataList :
-                    if len(eachLine.strip())!=0 :
-                        self.listWidget.addItem(eachLine.strip().split()[1]) 
-            if "DEC" in device:
+                    newHRstring = str(eachLine.split("\t")[0:2]).replace("[","").replace("]","").replace("'","").replace(",", "\t")
+                    if len(eachLine.strip())!=0 :                        
+                        self.listWidget.addItem(newHRstring.strip()) 
+                    
+            if "DEC" in self.device:
+                self.listWidget_2.setSortingEnabled(True)
                 self.listWidget_2.clear()
                 for eachLine in dataList :
+                    newHRstring = str(eachLine.split("\t")[0:3:2]).replace("[","").replace("]","").replace("'","").replace(",", "\t")
+                    print(newHRstring)
                     if len(eachLine.strip())!=0 :
-                        self.listWidget_2.addItem(eachLine.strip().split()[2]) 
+                        self.listWidget_2.addItem(newHRstring.strip())  
 
     #Points the telescope to a given Target
     def point(self):
-        if "AH" in device:
+        if "AH" in self.device:
             raTxt = self.txtPointRA.text()
             if len(raTxt) > 2:            
                 try:            
@@ -228,7 +369,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
             else:
                 msg = "Ivalid RA"
                 self.showDialog(msg)
-        elif "DEC" in device:
+        elif "DEC" in self.device:
             decTxt = self.txtPointDEC.text()
             if len(decTxt) > 2:            
                 try:            
@@ -245,22 +386,22 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
 
     #Update coordinates every 1s
     def updateData(self):
-        if "AH" in device or "DEC" in device:
-            year = datetime.datetime.now().strftime("%Y")
-            month = datetime.datetime.now().strftime("%m")
-            day = datetime.datetime.now().strftime("%d")
-            hours = datetime.datetime.now().strftime("%H")
-            minute = datetime.datetime.now().strftime("%M")
+        if "AH" in self.device or "DEC" in self.device:
+            # year = datetime.datetime.now().strftime("%Y")
+            # month = datetime.datetime.now().strftime("%m")
+            # day = datetime.datetime.now().strftime("%d")
+            # hours = datetime.datetime.now().strftime("%H")
+            # minute = datetime.datetime.now().strftime("%M")
             utcTime = str(datetime.datetime.utcnow().strftime('%H:%M:%S'))
             
             #ephem
             gatech = ephem.Observer()
             gatech.lon, gatech.lat = '-45.5825', '-22.534444'
             #gatech.date = year+month+day+" "+hours+minute
-            if "AH" in device:
+            if "AH" in self.device:
                 self.txtCoordLST.setText(str(gatech.sidereal_time()))
                 self.txtCoordUTC.setText(utcTime)
-            if "DEC" in device:
+            if "DEC" in self.device:
                 self.txtCoordLST_2.setText(str(gatech.sidereal_time()))
                 self.txtCoordUTC_2.setText(utcTime)      
         
@@ -270,14 +411,17 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.txtProgStatus.setText(statbuf)
         if "*" in statbuf:
             self.bitStats()
-            if "AH" in device:
+            if "AH" in self.device:
                 self.AHstat()
-            if "DEC" in device:
+            if "DEC" in self.device:
                 self.DECstat()
-            if "CUP" in device:
+            if "CUP" in self.device:
                 self.Domestat()
-            if "TUBO" in device:
+            if "TUBO" in self.device:
                 self.Tubostat()
+            
+        if statbuf and self.checkBoxLog.isChecked():
+            self.createLofFile()
 
     def bitStats(self):
         if statbuf[13] == "1":
@@ -334,7 +478,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
             self.stat13.setStyleSheet("background-color: indianred")
 
     def DECstat(self):
-        self.txtCoordDEC.setText(statbuf[0:11])
+        self.txtCoordDec.setText(statbuf[0:11])
     
     def Domestat(self):
         self.txtCoordDome.setText(statbuf[0:11])
@@ -350,8 +494,29 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             self.btnTracking.setText("OFF")
             self.btnTracking.setStyleSheet("background-color: indianred")
-        
-
+    
+    def createLofFile(self):
+        year = datetime.datetime.now().strftime("%Y")
+        month = datetime.datetime.now().strftime("%m")
+        day = datetime.datetime.now().strftime("%d")
+        hours = datetime.datetime.now().strftime("%H")
+        minute = datetime.datetime.now().strftime("%M")
+        seconds = datetime.datetime.now().strftime("%S")
+        time_log = str(hours) + ":" + str(minute) + ":" + str(seconds)
+        dirFile = self.settingsWin.txtLogPath.text()
+        fileName = "LOG - " + str(year) + "-" + str(month) + "-" + str(day) + ".txt"
+        pathFile = dirFile + fileName
+        if os.path.exists(pathFile):
+            f = open(dirFile+fileName,"a+")
+            f.write(time_log + " " + self.device + " = " + statbuf + "\n")
+        else:
+            try:
+                f = open(dirFile+fileName,"w+")
+                f.write(time_log + " " + self.device + " = " + statbuf + "\n")
+            except Exception as e:
+                self.timerUpdate.stop()
+                self.showDialog("Diretório nao existe")
+                
     #simple timer (1s)
     def startTimer(self):
         self.timerUpdate.stop()

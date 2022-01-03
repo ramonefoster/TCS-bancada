@@ -6,7 +6,7 @@ import time
 class DomeControll(threading.Thread):
     def __init__(self, device):
         threading.Thread.__init__(self)
-        self.porta = "COM6"
+        self.porta = "COM5"
         self.port=self.porta 
         #DOME 
         self.device = device      
