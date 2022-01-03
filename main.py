@@ -48,7 +48,7 @@ class SettingsWindow(baseSettings, formSettings):
 
         #butons
         self.btnSaveSettings.clicked.connect(self.saveSettings)
-        self.btnCancelSettings.clicked.connect(self.close)
+        self.btnCancelSettings.clicked.connect(self.cancelBtn)
 
     def getSettingsValue(self):
         self.setting_variables = QSettings('my app', 'variables')
@@ -58,7 +58,22 @@ class SettingsWindow(baseSettings, formSettings):
         self.setting_variables.setValue("baund", self.boxBaund.currentIndex())
         self.setting_variables.setValue("bsc", self.txtBSCpath.text())
         self.setting_variables.setValue("log", self.txtLogPath.text())
-        
+
+    def cancelBtn(self):
+        #load settings
+        self.txtLogPath.setText(self.setting_variables.value("log"))
+        self.txtBSCpath.setText(self.setting_variables.value("bsc"))
+        if (self.setting_variables.value("comport"))>0:
+            self.boxPort.setCurrentIndex(int(self.setting_variables.value("comport")))
+        else:
+            self.boxPort.setCurrentIndex(0)
+
+        if self.setting_variables.value("baund")>0:
+            self.boxBaund.setCurrentIndex(int(self.setting_variables.value("baund")))
+        else:
+            self.boxBaund.setCurrentIndex(0)
+        self.close()
+
     def ports(self):
         listP = serial.tools.list_ports.comports()
         connected = []

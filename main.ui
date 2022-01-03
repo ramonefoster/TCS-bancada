@@ -413,6 +413,9 @@
        <property name="alignment">
         <set>Qt::AlignCenter</set>
        </property>
+       <property name="placeholderText">
+        <string>+00 00 10.00</string>
+       </property>
       </widget>
      </widget>
      <widget class="QPushButton" name="btnPrecess">
@@ -484,6 +487,9 @@
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
+       </property>
+       <property name="placeholderText">
+        <string>+00 00 00.00</string>
        </property>
       </widget>
       <widget class="QLabel" name="label_8">
@@ -614,6 +620,9 @@
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
+       </property>
+       <property name="placeholderText">
+        <string>+00 00 00.00</string>
        </property>
       </widget>
       <widget class="QLabel" name="label_9">
@@ -1012,6 +1021,9 @@
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
+       </property>
+       <property name="placeholderText">
+        <string>+00 00 10.00</string>
        </property>
       </widget>
      </widget>
@@ -2786,6 +2798,25 @@
       <string>Record LOG</string>
      </property>
     </widget>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>450</x>
+      <y>390</y>
+      <width>81</width>
+      <height>131</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>img/logoLna.png</pixmap>
+    </property>
+    <property name="scaledContents">
+     <bool>true</bool>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
