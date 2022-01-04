@@ -4,9 +4,10 @@ import serial.tools.list_ports
 import time
 
 class TuboControll(threading.Thread):
-    def __init__(self, device):
+    def __init__(self, device, port, baund):
         threading.Thread.__init__(self)
-        self.porta = "COM5"
+        self.porta = port
+        self.baundRate = baund
         self.port=self.porta 
         #DOME 
         self.device = device      
@@ -18,7 +19,7 @@ class TuboControll(threading.Thread):
         if self.porta in self.result:
             self.ser = serial.Serial(
             port=self.porta,
-            baudrate=9600,
+            baudrate=self.baundRate,
             timeout=1
             )
             self.ser.close()
