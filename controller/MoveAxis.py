@@ -135,4 +135,5 @@ class AxisControll(threading.Thread):
             return(ack)
 
 AxisThread = threading.Thread(target = AxisControll, args=[])
+AxisThread.daemon = True
 AxisThread.start()

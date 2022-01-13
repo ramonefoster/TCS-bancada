@@ -5,7 +5,7 @@ import datetime
 import serial.tools.list_ports
 
 from PyQt5 import QtCore, QtGui, QtWidgets, uic, QtSerialPort
-from PyQt5.QtCore import QTimer, QDateTime, QObject, QThread, pyqtSignal, QUrl, pyqtSlot, Qt, QSettings
+from PyQt5.QtCore import QTimer, QDateTime, QObject, QThread, pyqtSignal, QUrl, pyqtSlot, Qt, QSettings, QThreadPool
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import QMainWindow, QAction, qApp, QApplication, QStyle, QWidget, QLabel, QLineEdit, QTextEdit, QGridLayout, QMessageBox
 import controller.MoveAxis as AxisDevice
@@ -92,12 +92,16 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         Ui_MainWindow.__init__(self)
         self.setupUi(self)
         self.settingsWin = SettingsWindow()
-        
+        self.thread_manager = QThreadPool()
+
+        global statbuf
+        statbuf = ''
         self.device = "NONE"         
 
         #clear prog erros
         self.actionLimpar.triggered.connect(self.clearBits)
         self.actionSettings.triggered.connect(self.openSettings)
+        self.actionDisconnect.triggered.connect(self.disconnectDevice)
 
         #connect devices
         self.btnStartAH.clicked.connect(self.connAH)
@@ -317,7 +321,11 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.DeviceOPD.sideral_ligar()
             elif statbuf[19] == "1":
                 self.DeviceOPD.sideral_desligar()
-        
+    
+    def disconnectDevice(self):
+        self.timerUpdate.stop()
+        self.DeviceOPD.prog_parar()
+        self.DeviceOPD.closePort()
 
     #Grabs text from txt
     def selectToPrecess(self): 
@@ -419,23 +427,32 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.txtCoordLST_2.setText(str(gatech.sidereal_time()))
                 self.txtCoordUTC_2.setText(utcTime)      
         
-        #AH DATA
-        global statbuf
-        statbuf = self.DeviceOPD.progStatus()
-        self.txtProgStatus.setText(statbuf)
-        if "*" in statbuf:
-            self.bitStats()
-            if "AH" in self.device:
-                self.AHstat()
-            if "DEC" in self.device:
-                self.DECstat()
-            if "CUP" in self.device:
-                self.Domestat()
-            if "TUBO" in self.device:
-                self.Tubostat()
+        #DATA 
+        self.getStatus()   
+        if statbuf:   
+            self.txtProgStatus.setText(statbuf)
+            if "*" in statbuf:
+                self.bitStats()
+                if "AH" in self.device:
+                    self.AHstat()
+                if "DEC" in self.device:
+                    self.DECstat()
+                if "CUP" in self.device:
+                    self.Domestat()
+                if "TUBO" in self.device:
+                    self.Tubostat()
             
         if statbuf and self.checkBoxLog.isChecked():
             self.createLofFile()
+
+    @pyqtSlot()
+    def getStatus(self):
+        self.thread_manager.start(self.fprogStatus)
+
+    @pyqtSlot()
+    def fprogStatus(self):
+        global statbuf
+        statbuf = self.DeviceOPD.progStatus()
 
     def bitStats(self):
         if statbuf[13] == "1":
