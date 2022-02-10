@@ -14,7 +14,7 @@ class TuboControll(threading.Thread):
 
         self.result = self.com_ports()
 
-        self.tubo_error = False
+        self.error_device = False
 
         if self.porta in self.result:
             self.ser = serial.Serial(
@@ -28,12 +28,12 @@ class TuboControll(threading.Thread):
                     self.ser.open()
                     self.ser.flushOutput()
                     self.ser.flushInput()
-                    self.tubo_error = False
+                    self.error_device = False
                 except Exception as e:
-                    self.tubo_error = True                    
+                    self.error_device = True                    
         else:
             print('Cannot connect to: ', self.porta)
-            self.tubo_error = True
+            self.error_device = True
 
     def close_port(self):
         if self.ser:
@@ -48,7 +48,7 @@ class TuboControll(threading.Thread):
             return(self.connected)
 
     def prog_status(self):    
-        if self.tubo_error:
+        if self.error_device:
             return("+0 00 00.00 *0000000000000000")
         else:        
             try:  
@@ -65,7 +65,7 @@ class TuboControll(threading.Thread):
                 return("+0 00 00.00 *0000000000000000")
 
     def move_foco(self, position):
-        if not self.tubo_error:
+        if not self.error_device:
             ret = 'ACK' in self.write_cmd(self.device+" FOCO MOVER = " + str(position) + "\r")
             if ret:
                 stat = True
@@ -74,7 +74,7 @@ class TuboControll(threading.Thread):
             return stat        
 
     def foco_up(self):
-        if not self.tubo_error:
+        if not self.error_device:
             ret = 'ACK' in self.write_cmd(self.device+" FOCO AUMENTAR\r")
             if ret:
                 stat = True
@@ -83,7 +83,7 @@ class TuboControll(threading.Thread):
             return stat
     
     def foco_down(self):
-        if not self.tubo_error:
+        if not self.error_device:
             ret = 'ACK' in self.write_cmd(self.device+" FOCO DIMINUIR\r")
             if ret:
                 stat = True
@@ -92,7 +92,7 @@ class TuboControll(threading.Thread):
             return stat
     
     def foco_ref_pos(self):
-        if not self.tubo_error:
+        if not self.error_device:
             ret = 'ACK' in self.write_cmd(self.device+" FOCO REFINAR+\r")
             if ret:
                 stat = True
@@ -101,7 +101,7 @@ class TuboControll(threading.Thread):
             return stat
     
     def foco_ref_neg(self):
-        if not self.tubo_error:
+        if not self.error_device:
             ret = 'ACK' in self.write_cmd(self.device+" FOCO REFINAR-\r")
             if ret:
                 stat = True
@@ -111,7 +111,7 @@ class TuboControll(threading.Thread):
 
                     
     def prog_parar(self):
-        if not self.tubo_error:
+        if not self.error_device:
             ret = 'ACK' in self.write_cmd(self.device+" FOCO PARAR\r")
             if ret:
                 stat = True
@@ -120,7 +120,7 @@ class TuboControll(threading.Thread):
             return stat
     
     def lamp_ne_on(self):
-        if not self.tubo_error:
+        if not self.error_device:
             ret = 'ACK' in self.write_cmd(self.device+" LAMP_NE LIGAR\r")
             if ret:
                 stat = True
@@ -129,7 +129,7 @@ class TuboControll(threading.Thread):
             return stat
     
     def lamp_ne_off(self):
-        if not self.tubo_error:
+        if not self.error_device:
             ret = 'ACK' in self.write_cmd(self.device+" LAMP_NE DESLIGAR\r")
             if ret:
                 stat = True
@@ -138,7 +138,7 @@ class TuboControll(threading.Thread):
             return stat
 
     def lamp_he_on(self):
-        if not self.tubo_error:
+        if not self.error_device:
             ret = 'ACK' in self.write_cmd(self.device+" LAMP_HE LIGAR\r")
             if ret:
                 stat = True
@@ -147,7 +147,7 @@ class TuboControll(threading.Thread):
             return stat
     
     def lamp_he_off(self):
-        if not self.tubo_error:
+        if not self.error_device:
             ret = 'ACK' in self.write_cmd(self.device+" LAMP_HE DESLIGAR\r")
             if ret:
                 stat = True
@@ -156,7 +156,7 @@ class TuboControll(threading.Thread):
             return stat
 
     def esp_lamp_avanc(self):
-        if not self.tubo_error:
+        if not self.error_device:
             ret = 'ACK' in self.write_cmd(self.device+" ESP_LAMP AVANCAR\r")
             if ret:
                 stat = True
@@ -165,7 +165,7 @@ class TuboControll(threading.Thread):
             return stat
 
     def esp_lamp_rec(self):
-        if not self.tubo_error:
+        if not self.error_device:
             ret = 'ACK' in self.write_cmd(self.device+" ESP_LAMP RECUAR\r")
             if ret:
                 stat = True
@@ -174,7 +174,7 @@ class TuboControll(threading.Thread):
             return stat
     
     def esp_lamp_off(self):
-        if not self.tubo_error:
+        if not self.error_device:
             ret = 'ACK' in self.write_cmd(self.device+" ESP_LAMP DESLIGAR\r")
             if ret:
                 stat = True
@@ -183,7 +183,7 @@ class TuboControll(threading.Thread):
             return stat
     
     def esp_a(self):
-        if not self.tubo_error:
+        if not self.error_device:
             ret = 'ACK' in self.write_cmd(self.device+" ESPELHO A\r")
             if ret:
                 stat = True
@@ -192,7 +192,7 @@ class TuboControll(threading.Thread):
             return stat
     
     def esp_b(self):
-        if not self.tubo_error:
+        if not self.error_device:
             ret = 'ACK' in self.write_cmd(self.device+" ESPELHO B\r")
             if ret:
                 stat = True
@@ -201,7 +201,7 @@ class TuboControll(threading.Thread):
             return stat
     
     def esp_c(self):
-        if not self.tubo_error:
+        if not self.error_device:
             ret = 'ACK' in self.write_cmd(self.device+" ESPELHO C\r")
             if ret:
                 stat = True
@@ -210,7 +210,7 @@ class TuboControll(threading.Thread):
             return stat
     
     def rot_ler(self):
-        if not self.tubo_error:
+        if not self.error_device:
             ret = 'ACK' in self.write_cmd(self.device+" ROTATOR LER\r")
             if ret:
                 stat = True
@@ -219,7 +219,7 @@ class TuboControll(threading.Thread):
             return stat
     
     def rot_test(self):
-        if not self.tubo_error:
+        if not self.error_device:
             ret = 'ACK' in self.write_cmd(self.device+" ROTATOR TESTAR\r")
             if ret:
                 stat = True
@@ -228,7 +228,7 @@ class TuboControll(threading.Thread):
             return stat
     
     def vent_on(self):
-        if not self.tubo_error:
+        if not self.error_device:
             ret = 'ACK' in self.write_cmd(self.device+" VENTILADOR LIGAR\r")
             if ret:
                 stat = True
@@ -237,7 +237,7 @@ class TuboControll(threading.Thread):
             return stat
     
     def vent_off(self):
-        if not self.tubo_error:
+        if not self.error_device:
             ret = 'ACK' in self.write_cmd(self.device+" VENTILADOR DESLIGAR\r")
             if ret:
                 stat = True
@@ -246,20 +246,24 @@ class TuboControll(threading.Thread):
             return stat
             
     def write_cmd(self, cmd):
-        if not self.tubo_error:
-            self.ser.flushOutput()
-            self.ser.flushInput()
-            self.ser.write(cmd.encode())
-            timeoutDome = time.time()
-            ack = ''
-            while '\r' not in ack:
-                ack += self.ser.read().decode()
-                if (time.time() - timeoutDome) > 1:
-                    self.ser.flushInput()
-                    self.ser.flushOutput()
-                    return ack
-            print(ack)    
-            return(ack)
+        if not self.error_device:
+            try:
+                self.ser.flushOutput()
+                self.ser.flushInput()
+                self.ser.write(cmd.encode())
+                timeout_device = time.time()
+                ack = ''
+                while '\r' not in ack:
+                    ack += self.ser.read().decode()
+                    if (time.time() - timeout_device) > 1:
+                        self.ser.flushInput()
+                        self.ser.flushOutput()
+                        return ack
+                print(ack)    
+                return(ack)
+            except Exception as e:
+                print(e)
+                return('NAK')
 
 TuboThread = threading.Thread(target = TuboControll, args=[])
 TuboThread.start()

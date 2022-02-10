@@ -15,7 +15,7 @@ class DomeControll(threading.Thread):
 
         self.result = self.com_ports()
 
-        self.errorDome = False
+        self.error_device = False
 
         if self.porta in self.result:
             self.ser = serial.Serial(
@@ -29,12 +29,12 @@ class DomeControll(threading.Thread):
                     self.ser.open()
                     self.ser.flushOutput()
                     self.ser.flushInput()
-                    self.errorDome = False
+                    self.error_device = False
                 except Exception as e:
-                    self.errorDome = True                    
+                    self.error_device = True                    
         else:
             print('Cannot connect to: ', self.porta)
-            self.errorDome = True
+            self.error_device = True
 
     def close_port(self):
         if self.ser:
@@ -49,7 +49,7 @@ class DomeControll(threading.Thread):
             return(self.connected)
 
     def prog_status(self): 
-        if self.errorDome:
+        if self.error_device:
             return("+0 00 00.00 *0000000000000000")
         else:        
             try:  
@@ -66,7 +66,7 @@ class DomeControll(threading.Thread):
                 return("+0 00 00.00 *0000000000000000")
 
     def move_cup(self, position):
-        if not self.errorDome:
+        if not self.error_device:
             ret = 'ACK' in self.write_cmd(self.device+" DOMO MOVER = " + str(position) + "\r")
             if ret:
                 stat = True
@@ -75,7 +75,7 @@ class DomeControll(threading.Thread):
             return stat        
 
     def open_shutter(self):
-        if not self.errorDome:
+        if not self.error_device:
             bitTrap = self.prog_status()[4]
             if bitTrap == "1" :
                 ret = 'ACK' in self.write_cmd(self.device+" TRAPEIRA ABRIR\r")
@@ -86,7 +86,7 @@ class DomeControll(threading.Thread):
                 return stat           
 
     def close_shutter(self):
-        if not self.errorDome:
+        if not self.error_device:
             bitTrap = self.prog_status()[4]
             if bitTrap == "1" :
                 ret = 'ACK' in self.write_cmd(self.device+" TRAPEIRA FECHAR\r")
@@ -97,7 +97,7 @@ class DomeControll(threading.Thread):
                 return stat
 
     def dome_cw(self):
-        if not self.errorDome:
+        if not self.error_device:
             ret = 'ACK' in self.write_cmd(self.device+" DOMO GIRAR_CW\r")
             if ret:
                 stat = True
@@ -106,7 +106,7 @@ class DomeControll(threading.Thread):
             return stat
 
     def dome_ccw(self):
-        if not self.errorDome:
+        if not self.error_device:
             ret = 'ACK' in self.write_cmd(self.device+" DOMO GIRAR_CCW\r")
             if ret:
                 stat = True
@@ -115,7 +115,7 @@ class DomeControll(threading.Thread):
             return stat
 
     def dome_jog(self):
-        if not self.errorDome:
+        if not self.error_device:
             ret = 'ACK' in self.write_cmd(self.device+" DOMO LIGAR_JOG\r")
             if ret:
                 stat = True
@@ -124,7 +124,7 @@ class DomeControll(threading.Thread):
             return stat
 
     def dome_rap(self):
-        if not self.errorDome:
+        if not self.error_device:
             ret = 'ACK' in self.write_cmd(self.device+" DOMO LIGAR_RAP\r")
             if ret:
                 stat = True
@@ -133,7 +133,7 @@ class DomeControll(threading.Thread):
             return stat
 
     def dome_flat_ligar(self):
-        if not self.errorDome:
+        if not self.error_device:
             ret = 'ACK' in self.write_cmd(self.device+" FLAT_WEAK LIGAR\r")
             if ret:
                 stat = True
@@ -142,7 +142,7 @@ class DomeControll(threading.Thread):
             return stat
             
     def dome_flat_desligar(self):
-        if not self.errorDome:
+        if not self.error_device:
             ret = 'ACK' in self.write_cmd(self.device+" FLAT_WEAK DESLIGAR\r")
             if ret:
                 stat = True
@@ -151,7 +151,7 @@ class DomeControll(threading.Thread):
             return stat
 
     def prog_error(self):
-        if not self.errorDome:
+        if not self.error_device:
             ret = 'ACK' in self.write_cmd(self.device+" PROG ERROS\r")
             if ret:
                 stat = True
@@ -160,7 +160,7 @@ class DomeControll(threading.Thread):
             return stat 
                     
     def prog_parar(self):
-        if not self.errorDome:
+        if not self.error_device:
             ret = 'ACK' in self.write_cmd(self.device+" DOMO PARAR\r")
             if ret:
                 stat = True
@@ -169,20 +169,24 @@ class DomeControll(threading.Thread):
             return stat
             
     def write_cmd(self, cmd):
-        if not self.errorDome:
-            self.ser.flushOutput()
-            self.ser.flushInput()
-            self.ser.write(cmd.encode())
-            timeoutDome = time.time()
-            ack = ''
-            while '\r' not in ack:
-                ack += self.ser.read().decode()
-                if (time.time() - timeoutDome) > 1:
-                    self.ser.flushInput()
-                    self.ser.flushOutput()
-                    return ack
-            print(ack)    
-            return(ack)
+        if not self.error_device:
+            try:
+                self.ser.flushOutput()
+                self.ser.flushInput()
+                self.ser.write(cmd.encode())
+                timeout_device = time.time()
+                ack = ''
+                while '\r' not in ack:
+                    ack += self.ser.read().decode()
+                    if (time.time() - timeout_device) > 1:
+                        self.ser.flushInput()
+                        self.ser.flushOutput()
+                        return ack
+                print(ack)    
+                return(ack)
+            except Exception as e:
+                print(e)
+                return('NAK')
 
 DomeThread = threading.Thread(target = DomeControll, args=[])
 DomeThread.start()
