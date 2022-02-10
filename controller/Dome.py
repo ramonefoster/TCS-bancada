@@ -150,7 +150,7 @@ class DomeControll(threading.Thread):
                 stat = False
             return stat
 
-    def progErros(self):
+    def prog_error(self):
         if not self.errorDome:
             ret = 'ACK' in self.write_cmd(self.device+" PROG ERROS\r")
             if ret:

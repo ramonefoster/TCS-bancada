@@ -342,7 +342,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def clear_error_bit(self):
         """prog erros"""
-        self.opd_device.progErros()
+        self.opd_device.prog_error()
 
     def mover_rel(self):
         """fine movement by indexer"""
@@ -373,7 +373,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         """discconect devices and resets controller"""
         self.timer_update.stop()
         self.opd_device.prog_parar()
-        self.opd_device.closePort()
+        self.opd_device.close_port()
 
     def select_precess(self):
         """Grabs selected txt from table"""
