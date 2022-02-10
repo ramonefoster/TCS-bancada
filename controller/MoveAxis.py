@@ -120,19 +120,23 @@ class AxisControll(threading.Thread):
             
     def writeCommand(self, cmd):
         if not self.errorDome:
-            self.ser.flushOutput()
-            self.ser.flushInput()
-            self.ser.write(cmd.encode())
-            timeoutDome = time.time()
-            ack = ''
-            while '\r' not in ack:
-                ack += self.ser.read().decode()
-                if (time.time() - timeoutDome) > 1:
-                    self.ser.flushInput()
-                    self.ser.flushOutput()
-                    return ack
-            print(ack)    
-            return(ack)
+            try:
+                self.ser.flushOutput()
+                self.ser.flushInput()
+                self.ser.write(cmd.encode())
+                timeoutDome = time.time()
+                ack = ''
+                while '\r' not in ack:
+                    ack += self.ser.read().decode()
+                    if (time.time() - timeoutDome) > 1:
+                        self.ser.flushInput()
+                        self.ser.flushOutput()
+                        return ack
+                print(ack)    
+                return(ack)
+            except Exception as e:
+                print(e)
+
 
 AxisThread = threading.Thread(target = AxisControll, args=[])
 AxisThread.daemon = True

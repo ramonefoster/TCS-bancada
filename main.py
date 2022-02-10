@@ -1,37 +1,41 @@
-import sys, os
-import time
-import ephem
+"""
+TCS-bancada is a software that emulates the TCSPD for testing in OPD's eletronic laboratory
+"""
+import sys
+import os
 import datetime
+import ephem
 import serial.tools.list_ports
 
-from PyQt5 import QtCore, QtGui, QtWidgets, uic, QtSerialPort
-from PyQt5.QtCore import QTimer, QDateTime, QObject, QThread, pyqtSignal, QUrl, pyqtSlot, Qt, QSettings, QThreadPool
+from PyQt5 import QtWidgets, uic
+from PyQt5.QtCore import QTimer,  pyqtSlot, QSettings, QThreadPool
 from PyQt5.QtGui import *
-from PyQt5.QtWidgets import QMainWindow, QAction, qApp, QApplication, QStyle, QWidget, QLabel, QLineEdit, QTextEdit, QGridLayout, QMessageBox
+from PyQt5.QtWidgets import QMessageBox
 import controller.MoveAxis as AxisDevice
 import controller.Dome as Dome
 import controller.Tubo as Tubo
 
-pyQTfileName = "main.ui" 
-Ui_MainWindow, QtBaseClass = uic.loadUiType(pyQTfileName)
+main_window_file = "main.ui"
+Ui_MainWindow, QtBaseClass = uic.loadUiType(main_window_file)
 
-SettingsUI = 'settings.ui'
-formSettings, baseSettings = uic.loadUiType(SettingsUI)
+settings_ui_file = 'settings.ui'
+formSettings, baseSettings = uic.loadUiType(settings_ui_file)
 
 class SettingsWindow(baseSettings, formSettings):
+    """Settings window for configuration of files and com ports"""
     def __init__(self):
         super(baseSettings, self).__init__()
         self.setupUi(self)
 
-        listBaundRates = ['2400', '4800', '9600', '115200']
+        list_baund_rates = ['2400', '4800', '9600', '115200']
         self.boxBaund.clear()
-        self.boxBaund.addItems(listBaundRates) 
+        self.boxBaund.addItems(list_baund_rates)
 
-        listPorts = self.ports()
+        list_com_portsorts = self.ports()
         self.boxPort.clear()
-        self.boxPort.addItems(listPorts)
+        self.boxPort.addItems(list_com_portsorts)
 
-        self.getSettingsValue() 
+        self.get_settings_values()
 
         #load settings
         self.txtLogPath.setText(self.setting_variables.value("log"))
@@ -47,19 +51,22 @@ class SettingsWindow(baseSettings, formSettings):
             self.boxBaund.setCurrentIndex(0)
 
         #butons
-        self.btnSaveSettings.clicked.connect(self.saveSettings)
-        self.btnCancelSettings.clicked.connect(self.cancelBtn)
+        self.btnsave_settings.clicked.connect(self.save_settings)
+        self.btnCancelSettings.clicked.connect(self.cancel_btn)
 
-    def getSettingsValue(self):
+    def get_settings_values(self):
+        """get saved settings"""
         self.setting_variables = QSettings('my app', 'variables')
-    
-    def saveSettings(self):
+
+    def save_settings(self):
+        """save port and file settings"""
         self.setting_variables.setValue("comport", self.boxPort.currentIndex())
         self.setting_variables.setValue("baund", self.boxBaund.currentIndex())
         self.setting_variables.setValue("bsc", self.txtBSCpath.text())
         self.setting_variables.setValue("log", self.txtLogPath.text())
 
-    def cancelBtn(self):
+    def cancel_btn(self):
+        """cancels and do not save any change"""
         #load settings
         self.txtLogPath.setText(self.setting_variables.value("log"))
         self.txtBSCpath.setText(self.setting_variables.value("bsc"))
@@ -75,61 +82,64 @@ class SettingsWindow(baseSettings, formSettings):
         self.close()
 
     def ports(self):
-        listP = serial.tools.list_ports.comports()
+        """list forts availables"""
+        list_com_ports = serial.tools.list_ports.comports()
         connected = []
-        for element in listP:
+        for element in list_com_ports:
             connected.append(element.device)
 
-        return(connected)
-    
-    def closeEvent(self, event):
+        return connected
+
+    def close_event(self, event):
+        """closes setting window"""
         event.accept()
-        
 
 class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
+    """main window"""
     def __init__(self):
         QtWidgets.QMainWindow.__init__(self)
         Ui_MainWindow.__init__(self)
         self.setupUi(self)
-        self.settingsWin = SettingsWindow()
+        self.settings_window = SettingsWindow()
         self.thread_manager = QThreadPool()
 
         global statbuf
-        statbuf = ''
-        self.device = "NONE"         
+        statbuf = None
+        self.device = None
+        self.opd_device = None
 
         #clear prog erros
-        self.actionLimpar.triggered.connect(self.clearBits)
-        self.actionSettings.triggered.connect(self.openSettings)
-        self.actionDisconnect.triggered.connect(self.disconnectDevice)
+        self.actionLimpar.triggered.connect(self.clear_error_bit)
+        self.actionSettings.triggered.connect(self.open_settings)
+        self.actionDisconnect.triggered.connect(self.disconnect_device)
 
         #connect devices
-        self.btnStartAH.clicked.connect(self.connAH)
-        self.btnStartDEC.clicked.connect(self.connDEC)
-        self.btnStartDome.clicked.connect(self.connDome)
-        self.btnStartTubo.clicked.connect(self.connTubo)
+        self.btnStartAH.clicked.connect(self.connect_ah)
+        self.btnStartDEC.clicked.connect(self.connect_dec)
+        self.btnStartDome.clicked.connect(self.connect_dome)
+        self.btnStartTubo.clicked.connect(self.connect_tubo)
 
         #AH buttons
         self.btnPoint.clicked.connect(self.point)
         self.btnTracking.clicked.connect(self.tracking)
-        self.btnStop.clicked.connect(self.stop) 
-        self.btnMoveRel.clicked.connect(self.moverRel)
+        self.btnStop.clicked.connect(self.stop)
+        self.btnMoveRel.clicked.connect(self.mover_rel)
 
         #DEC buttons
         self.btnPoint_2.clicked.connect(self.point)
-        self.btnStop_2.clicked.connect(self.stop) 
-        self.btnMoveRel_2.clicked.connect(self.moverRel)
+        self.btnStop_2.clicked.connect(self.stop)
+        self.btnMoveRel_2.clicked.connect(self.mover_rel)
 
         #Dome Buttons
-        self.btnDomeCW.clicked.connect(self.DomeCW)
-        self.btnDomeCCW.clicked.connect(self.DomeCCW)
-        self.btnDomeStop.clicked.connect(self.domeStop)
-        self.btnDomeRap.clicked.connect(self.domeRAP)
-        self.btnDomeJog.clicked.connect(self.DomeJOG)
-        self.btnDomeGo.clicked.connect(self.domeMove)    
-        self.btnShutter.clicked.connect(self.domeShutter)
-        self.btnLampON.clicked.connect(self.domeFlatOn)
-        self.btnLampOff.clicked.connect(self.domeFlatOff)
+        self.btndome_cw.clicked.connect(self.dome_cw)
+        self.btndome_ccw.clicked.connect(self.dome_ccw)
+        self.btndome_stop.clicked.connect(self.dome_stop)
+        self.btndome_rap.clicked.connect(self.dome_rap)
+        self.btndome_jog.clicked.connect(self.dome_jog)
+        self.btnDomeGo.clicked.connect(self.dome_move)
+        self.btnShutter.clicked.connect(self.dome_shutter)
+        self.btnLampON.clicked.connect(self.dome_flat_ligar)
+        self.btnLampOff.clicked.connect(self.dome_flat_desligar)
 
         #Tubo buttons
         self.btnEspA.clicked.connect(self.espelho_a)
@@ -149,314 +159,361 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.btnHEOFF.clicked.connect(self.he_off)
         self.brnFocoMover.clicked.connect(self.he_off)
 
-        self.timerUpdate = QTimer()
+        self.timer_update = QTimer()
 
         #precess
-        self.btnPrecess.clicked.connect(self.selectToPrecess)
-        self.btnOpenBSCfile.clicked.connect(self.loadBSCdefault)
-        self.btnPrecess_2.clicked.connect(self.selectToPrecess)
-        self.btnOpenBSCfile_2.clicked.connect(self.loadBSCdefault)
+        self.btnPrecess.clicked.connect(self.select_precess)
+        self.btnOpenbsc_file.clicked.connect(self.load_bsc_default)
+        self.btnPrecess_2.clicked.connect(self.select_precess)
+        self.btnOpenbsc_file_2.clicked.connect(self.load_bsc_default)
 
-    def openSettings(self, checked):
-        if self.settingsWin.isVisible():
-            self.settingsWin.hide()
+    def open_settings(self):
+        """open settings window"""
+        if self.settings_window.isVisible():
+            self.settings_window.hide()
         else:
-            self.settingsWin.show()
+            self.settings_window.show()
 
     #Tubo
     def espelho_a(self):
-        self.DeviceOPD.espA()
-    
+        """A mirror"""
+        self.opd_device.esp_a()
+
     def espelho_b(self):
-        self.DeviceOPD.espB()
-    
+        """B mirror"""
+        self.opd_device.esp_b()
+
     def espelho_c(self):
-        self.DeviceOPD.espC()
-    
+        """C mirror"""
+        self.opd_device.esp_c()
+
     def rotator_ler(self):
-        self.DeviceOPD.rot_ler()
+        """read rotator"""
+        self.opd_device.rot_ler()
 
     def rotator_testar(self):
-        self.DeviceOPD.rot_test()
+        """test rotator"""
+        self.opd_device.rot_test()
 
     def fan_on(self):
-        self.DeviceOPD.vent_on()
+        """turn fan on"""
+        self.opd_device.vent_on()
 
     def fan_off(self):
-        self.DeviceOPD.vent_off()
+        """turn fan off"""
+        self.opd_device.vent_off()
 
     def foco_up(self):
-        self.DeviceOPD.focoUp()
+        """moves focus up"""
+        self.opd_device.foco_up()
 
     def foco_down(self):
-        self.DeviceOPD.focodOWN()
+        """moves focus down"""
+        self.opd_device.foco_down()
 
     def ref_up(self):
-        self.DeviceOPD.focoRefPos()
-    
+        """moves fine pos path"""
+        self.opd_device.foco_ref_pos()
+
     def ref_down(self):
-        self.DeviceOPD.focoRefNeg()
-    
+        """moves fine negative path"""
+        self.opd_device.foco_ref_neg()
+
     def ne_on(self):
-        self.DeviceOPD.lampNEON()
-    
+        """neon light on"""
+        self.opd_device.lamp_ne_on()
+
     def ne_off(self):
-        self.DeviceOPD.lampNEOFF()
+        """neon light off"""
+        self.opd_device.lamp_ne_off()
 
     def he_on(self):
-        self.DeviceOPD.lampHEON()
+        """helium light on"""
+        self.opd_device.lamp_he_on()
 
     def he_off(self):
-        self.DeviceOPD.lampHEOFF()
-    
+        """helium light off"""
+        self.opd_device.lamp_he_off()
+
     def mover_foco(self):
+        """moves focus"""
         if "TUBO" in self.device:
             foco_pos = self.txtFocoPos.text()
             if len(foco_pos) > 0 and foco_pos.isdigit():
-                self.DeviceOPD.mover_rel(foco_pos)
-        
+                self.opd_device.move_foco(foco_pos)
+
     #DOME
-    def DomeCW(self):
-        self.DeviceOPD.DomeCW()
-    
-    def DomeCCW(self):
-        self.DeviceOPD.DomeCCW()
-    
-    def DomeJOG(self):
-        self.DeviceOPD.DomeJOG()
-    
-    def domeRAP(self):
-        self.DeviceOPD.DomeRAP()
-    
-    def domeStop(self):
-        self.DeviceOPD.prog_parar()
-    
-    def domeFlatOn(self):
-        lampStat = self.DeviceOPD.DomeFlatLampON()
-        if lampStat:
+    def dome_cw(self):
+        """clockwise movement"""
+        self.opd_device.dome_cw()
+
+    def dome_ccw(self):
+        """counter-clockwise movement"""
+        self.opd_device.dome_ccw()
+
+    def dome_jog(self):
+        """jog movement"""
+        self.opd_device.dome_jog()
+
+    def dome_rap(self):
+        """rapid movement"""
+        self.opd_device.dome_rap()
+
+    def dome_stop(self):
+        """stop any movement"""
+        self.opd_device.prog_parar()
+
+    def dome_flat_ligar(self):
+        """turns lamp on"""
+        lamp_stat = self.opd_device.dome_flat_ligar()
+        if lamp_stat:
             self.statLamp.setStyleSheet("background-color: lightgreen")
         else:
             self.statLamp.setStyleSheet("background-color: indianred")
-    
-    def domeFlatOff(self):
-        lampStat = self.DeviceOPD.DomeFlatLampOFF()
-        if lampStat:
+
+    def dome_flat_desligar(self):
+        """turns lamp off"""
+        lamp_stat = self.opd_device.dome_flat_desligar()
+        if lamp_stat:
             self.statLamp.setStyleSheet("background-color: indianred")
         else:
             self.statLamp.setStyleSheet("background-color: lightgreen")
-    
-    def domeMove(self):
-        posDome = self.txtPointDome.text()
-        if posDome.isdigit():            
-            try:            
+
+    def dome_move(self):
+        """moves the dome"""
+        pos_dome = self.txtPointDome.text()
+        if pos_dome.isdigit():
+            try:
                 if statbuf[25] == "0":
-                    self.DeviceOPD.moveCup(int(posDome))
+                    self.opd_device.move_cup(int(pos_dome))
                 else:
                     print("erro")
-                            
-            except Exception as e:               
-                print("error: ", e)                
+
+            except Exception as exc_error:
+                print("error: ", exc_error)
         else:
             msg = "Ivalid position"
-            self.showDialog(msg)
-    
-    def domeShutter(self):
-        if statbuf[19] == "0":
-            self.DeviceOPD.openShutter()
-        elif statbuf[19] == "1":
-            self.DeviceOPD.CloseShutter() 
+            self.show_dialog(msg)
 
-    def connAH(self):
-        self.timerUpdate.timeout.connect(self.updateData)
-        self.startTimer()
+    def dome_shutter(self):
+        """opens or close based on statbuf"""
+        if statbuf[19] == "0":
+            self.opd_device.open_shutter()
+        elif statbuf[19] == "1":
+            self.opd_device.close_shutter()
+
+    def connect_ah(self):
+        """connect ah"""
+        self.timer_update.timeout.connect(self.update_data)
+        self.start_timer()
         self.device = "AH"
         self.label_sideral.setText("Sideral")
-        self.label_manual.setText("Manual")  
-        self.DeviceOPD = AxisDevice.AxisControll(self.device, self.settingsWin.boxPort.currentText(), int(self.settingsWin.boxBaund.currentText()))
-    
-    def connDEC(self):
-        self.timerUpdate.timeout.connect(self.updateData)
-        self.startTimer()
+        self.label_manual.setText("Manual")
+        self.opd_device = AxisDevice.AxisControll(self.device, self.settings_window.boxPort.currentText(),
+                            int(self.settings_window.boxBaund.currentText()))
+
+    def connect_dec(self):
+        """connect dec"""
+        self.timer_update.timeout.connect(self.update_data)
+        self.start_timer()
         self.device = "DEC"
         self.label_sideral.setText("Sideral")
-        self.label_manual.setText("Manual")  
-        self.DeviceOPD = AxisDevice.AxisControll(self.device, self.settingsWin.boxPort.currentText(), int(self.settingsWin.boxBaund.currentText()))
-    
-    def connDome(self):
-        self.timerUpdate.timeout.connect(self.updateData)
-        self.startTimer()
+        self.label_manual.setText("Manual")
+        self.opd_device = AxisDevice.AxisControll(self.device, self.settings_window.boxPort.currentText(),
+                            int(self.settings_window.boxBaund.currentText()))
+
+    def connect_dome(self):
+        """connect dome"""
+        self.timer_update.timeout.connect(self.update_data)
+        self.start_timer()
         self.device = "CUP"
         self.label_sideral.setText("Trapeira")
-        self.label_manual.setText("Paravento")        
-        self.DeviceOPD = AxisDevice.AxisControll(self.device, self.settingsWin.boxPort.currentText(), int(self.settingsWin.boxBaund.currentText()))
-    
-    def connTubo(self):
-        self.timerUpdate.timeout.connect(self.updateData)
-        self.startTimer()
+        self.label_manual.setText("Paravento")
+        self.opd_device = Dome.DomeControll(self.device, self.settings_window.boxPort.currentText(),
+                            int(self.settings_window.boxBaund.currentText()))
+
+    def connect_tubo(self):
+        """connect Tubo"""
+        self.timer_update.timeout.connect(self.update_data)
+        self.start_timer()
         self.device = "TUBO"
-        self.DeviceOPD = AxisDevice.AxisControll(self.device, self.settingsWin.boxPort.currentText(), int(self.settingsWin.boxBaund.currentText()))
+        self.opd_device = Tubo.TuboControll(self.device, self.settings_window.boxPort.currentText(),
+                            int(self.settings_window.boxBaund.currentText()))
 
-    def clearBits(self):
-        self.DeviceOPD.progErros()
-    
-    def moverRel(self):
+    def clear_error_bit(self):
+        """prog erros"""
+        self.opd_device.progErros()
+
+    def mover_rel(self):
+        """fine movement by indexer"""
         if "AH" in self.device:
-            destRel = self.txtIndexer.text()
-            if len(destRel) > 2:
-                self.DeviceOPD.mover_rel(destRel)
+            dest_rel = self.txtIndexer.text()
+            if len(dest_rel) > 2:
+                self.opd_device.mover_rel(dest_rel)
         if "DEC" in self.device:
-            destRel = self.txtIndexer_2.text()
-            if len(destRel) > 2:
-                self.DeviceOPD.mover_rel(destRel)        
+            dest_rel = self.txtIndexer_2.text()
+            if len(dest_rel) > 2:
+                self.opd_device.mover_rel(dest_rel)
 
-    #stop any movement and abort slew
     def stop(self):
-        self.DeviceOPD.prog_parar()
+        """stop any movement and abort slew"""
+        self.opd_device.prog_parar()
         if "AH" in self.device:
-            self.DeviceOPD.sideral_desligar()
+            self.opd_device.sideral_desligar()
 
     def tracking(self):
+        """turns sidereal on and off"""
         if "AH" in self.device:
             if statbuf[19] == "0":
-                self.DeviceOPD.sideral_ligar()
+                self.opd_device.sideral_ligar()
             elif statbuf[19] == "1":
-                self.DeviceOPD.sideral_desligar()
-    
-    def disconnectDevice(self):
-        self.timerUpdate.stop()
-        self.DeviceOPD.prog_parar()
-        self.DeviceOPD.closePort()
+                self.opd_device.sideral_desligar()
 
-    #Grabs text from txt
-    def selectToPrecess(self): 
-        if "AH" in self.device:        
-            nameObj = ([item.text().split("\t")[0].strip() for item in self.listWidget.selectedItems()])[0]
-            raObj = ([item.text().split("\t")[1].strip() for item in self.listWidget.selectedItems()])[0]
-            if self.listWidget.selectedItems(): 
-                self.setPrecess(nameObj, raObj)
-        if "DEC" in self.device:
-            nameObj = ([item.text().split("\t")[0].strip() for item in self.listWidget_2.selectedItems()])[0]
-            raObj = ([item.text().split("\t")[1].strip() for item in self.listWidget_2.selectedItems()])[0] 
-            if self.listWidget.selectedItems(): 
-                self.setPrecess(nameObj, raObj)     
-        
-    
-    #Precess object and check if its above the Horizon
-    def setPrecess(self, nameObj, raObj): 
+    def disconnect_device(self):
+        """discconect devices and resets controller"""
+        self.timer_update.stop()
+        self.opd_device.prog_parar()
+        self.opd_device.closePort()
+
+    def select_precess(self):
+        """Grabs selected txt from table"""
         if "AH" in self.device:
-            self.txtPointRA.setText(raObj)
-            self.txtPointOBJ.setText(nameObj)
+            name_obj = ([item.text().split("\t")[0].strip() \
+                for item in self.listWidget.selectedItems()])[0]
+            ra_obj = ([item.text().split("\t")[1].strip() \
+                for item in self.listWidget.selectedItems()])[0]
+            if self.listWidget.selectedItems():
+                self.set_precess(name_obj, ra_obj)
         if "DEC" in self.device:
-            self.txtPointDEC.setText(raObj)
-            self.txtPointOBJ_2.setText(nameObj)
+            name_obj = ([item.text().split("\t")[0].strip() \
+                for item in self.listWidget_2.selectedItems()])[0]
+            ra_obj = ([item.text().split("\t")[1].strip() \
+                for item in self.listWidget_2.selectedItems()])[0]
+            if self.listWidget.selectedItems():
+                self.set_precess(name_obj, ra_obj)
 
-    def loadBSCdefault(self):  
+    def set_precess(self, name_obj, ra_obj):
+        """Precess object and check if its above the Horizon"""
+        if "AH" in self.device:
+            self.txtPointRA.setText(ra_obj)
+            self.txtPointOBJ.setText(name_obj)
+        if "DEC" in self.device:
+            self.txtPointDEC.setText(ra_obj)
+            self.txtPointOBJ_2.setText(name_obj)
+
+    def load_bsc_default(self):
+        """load default star catalog"""
         ##################################################
-        BSCfile = self.settingsWin.txtBSCpath.text()       
-        #BSCfile = "C:\\Users\\User\\Documents\\BSC_08.txt"
+        bsc_file = self.settings_window.txtBSCpath.text()
+        #bsc_file = "C:\\Users\\User\\Documents\\BSC_08.txt"
         ##################################################
-        if BSCfile and os.path.exists(BSCfile):             
-            data = open(str(BSCfile), 'r')
-            dataList = data.readlines()
+        if bsc_file and os.path.exists(bsc_file):
+            data = open(str(bsc_file), 'r')
+            data_list = data.readlines()
             if "AH" in self.device:
                 self.listWidget.clear()
-                for eachLine in dataList :
-                    newHRstring = str(eachLine.split("\t")[0:2]).replace("[","").replace("]","").replace("'","").replace(",", "\t")
-                    if len(eachLine.strip())!=0 :                        
-                        self.listWidget.addItem(newHRstring.strip()) 
-                    
+                for each_line in data_list :
+                    new_hr_string = str(each_line.split("\t")[0:2]).replace("[","").replace("]","").\
+                        replace("'","").replace(",", "\t")
+                    if len(each_line.strip())!=0:
+                        self.listWidget.addItem(new_hr_string.strip())
+
             if "DEC" in self.device:
                 self.listWidget_2.setSortingEnabled(True)
                 self.listWidget_2.clear()
-                for eachLine in dataList :
-                    newHRstring = str(eachLine.split("\t")[0:3:2]).replace("[","").replace("]","").replace("'","").replace(",", "\t")
-                    print(newHRstring)
-                    if len(eachLine.strip())!=0 :
-                        self.listWidget_2.addItem(newHRstring.strip())  
+                for each_line in data_list :
+                    new_hr_string = str(each_line.split("\t")[0:3:2]).replace("[","").replace("]","").\
+                        replace("'","").replace(",", "\t")
+                    print(new_hr_string)
+                    if len(each_line.strip())!=0 :
+                        self.listWidget_2.addItem(new_hr_string.strip())
 
-    #Points the telescope to a given Target
     def point(self):
+        """Points the telescope to a given Target"""
         if "AH" in self.device:
-            raTxt = self.txtPointRA.text()
-            if len(raTxt) > 2:            
-                try:            
+            ra_txt = self.txtPointRA.text()
+            if len(ra_txt) > 2:
+                try:
                     if statbuf[25] == "0":
-                        self.DeviceOPD.sideral_ligar()
-                        self.DeviceOPD.mover_rap(raTxt)
+                        self.opd_device.sideral_ligar()
+                        self.opd_device.mover_rap(ra_txt)
                     else:
                         print("erro")
-                            
-                except Exception as e:               
-                    print("error: ", e)                
+
+                except Exception as exc_err:
+                    print("error: ", exc_err)
             else:
                 msg = "Ivalid RA"
-                self.showDialog(msg)
+                self.show_dialog(msg)
         elif "DEC" in self.device:
-            decTxt = self.txtPointDEC.text()
-            if len(decTxt) > 2:            
-                try:            
+            dect_txt = self.txtPointDEC.text()
+            if len(dect_txt) > 2:
+                try:
                     if statbuf[25] == "0":
-                        self.DeviceOPD.mover_rap(decTxt)
+                        self.opd_device.mover_rap(dect_txt)
                     else:
                         print("erro")
-                            
-                except Exception as e:               
-                    print("error: ", e)                
+
+                except Exception as exc_err:
+                    print("error: ", exc_err)
             else:
                 msg = "Ivalid DEC inputs"
-                self.showDialog(msg)
+                self.show_dialog(msg)
 
-    #Update coordinates every 1s
-    def updateData(self):
+    def update_data(self):
+        """    Update coordinates every 1s    """
         if "AH" in self.device or "DEC" in self.device:
             # year = datetime.datetime.now().strftime("%Y")
             # month = datetime.datetime.now().strftime("%m")
             # day = datetime.datetime.now().strftime("%d")
             # hours = datetime.datetime.now().strftime("%H")
             # minute = datetime.datetime.now().strftime("%M")
-            utcTime = str(datetime.datetime.utcnow().strftime('%H:%M:%S'))
-            
+            utc_time = str(datetime.datetime.utcnow().strftime('%H:%M:%S'))
+
             #ephem
             gatech = ephem.Observer()
             gatech.lon, gatech.lat = '-45.5825', '-22.534444'
             #gatech.date = year+month+day+" "+hours+minute
             if "AH" in self.device:
                 self.txtCoordLST.setText(str(gatech.sidereal_time()))
-                self.txtCoordUTC.setText(utcTime)
+                self.txtCoordUTC.setText(utc_time)
             if "DEC" in self.device:
                 self.txtCoordLST_2.setText(str(gatech.sidereal_time()))
-                self.txtCoordUTC_2.setText(utcTime)      
-        
-        #DATA 
-        self.getStatus()   
-        if statbuf:   
+                self.txtCoordUTC_2.setText(utc_time)
+
+        #DATA
+        self.get_status()
+        if statbuf:
             self.txtProgStatus.setText(statbuf)
             if "*" in statbuf:
-                self.bitStats()
+                self.bit_status()
                 if "AH" in self.device:
-                    self.AHstat()
+                    self.ah_status()
                 if "DEC" in self.device:
-                    self.DECstat()
+                    self.dec_stat()
                 if "CUP" in self.device:
-                    self.Domestat()
+                    self.dome_stat()
                 if "TUBO" in self.device:
-                    self.Tubostat()
-            
+                    self.tubo_status()
+
         if statbuf and self.checkBoxLog.isChecked():
-            self.createLofFile()
+            self.create_log_file()
 
     @pyqtSlot()
-    def getStatus(self):
-        self.thread_manager.start(self.fprogStatus)
+    def get_status(self):
+        """calls threading stats"""
+        self.thread_manager.start(self.get_prog_status)
 
     @pyqtSlot()
-    def fprogStatus(self):
+    def get_prog_status(self):
+        """get statbuf from controller"""
         global statbuf
-        statbuf = self.DeviceOPD.progStatus()
+        statbuf = self.opd_device.progStatus()
 
-    def bitStats(self):
+    def bit_status(self):
+        """sets the labels colors for each statbit"""
         if statbuf[13] == "1":
-             self.stat1.setStyleSheet("background-color: lightgreen")
+            self.stat1.setStyleSheet("background-color: lightgreen")
         else:
             self.stat1.setStyleSheet("background-color: indianred")
         if statbuf[14] == "1":
@@ -508,16 +565,20 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             self.stat13.setStyleSheet("background-color: indianred")
 
-    def DECstat(self):
+    def dec_stat(self):
+        """shows dec statbuf"""
         self.txtCoordDec.setText(statbuf[0:11])
-    
-    def Domestat(self):
+
+    def dome_stat(self):
+        """shows dome statbuf"""
         self.txtCoordDome.setText(statbuf[0:11])
-    
-    def Tubostat(self):
+
+    def tubo_status(self):
+        """shows tubo statbuf"""
         self.txtCoordTubo.setText(statbuf[0:11])
-            
-    def AHstat(self):        
+
+    def ah_status(self):
+        """shows ah statbuf and check sideral stat"""
         self.txtCoordRA.setText(statbuf[0:11])
         if statbuf[19] == "1":
             self.btnTracking.setText("ON")
@@ -525,8 +586,9 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             self.btnTracking.setText("OFF")
             self.btnTracking.setStyleSheet("background-color: indianred")
-    
-    def createLofFile(self):
+
+    def create_log_file(self):
+        """creates a log file"""
         year = datetime.datetime.now().strftime("%Y")
         month = datetime.datetime.now().strftime("%m")
         day = datetime.datetime.now().strftime("%d")
@@ -534,40 +596,44 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         minute = datetime.datetime.now().strftime("%M")
         seconds = datetime.datetime.now().strftime("%S")
         time_log = str(hours) + ":" + str(minute) + ":" + str(seconds)
-        dirFile = self.settingsWin.txtLogPath.text()
-        fileName = "LOG - " + str(year) + "-" + str(month) + "-" + str(day) + ".txt"
-        pathFile = dirFile + fileName
-        if os.path.exists(pathFile):
-            f = open(dirFile+fileName,"a+")
-            f.write(time_log + " " + self.device + " = " + statbuf + "\n")
+        dir_log_file = self.settings_window.txtLogPath.text()
+        log_file_name = "LOG - " + str(year) + "-" + str(month) + "-" + str(day) + ".txt"
+        log_path = dir_log_file + log_file_name
+        if os.path.exists(log_path):
+            log_file = open(dir_log_file+log_file_name,"a+")
+            log_file.write(time_log + " " + self.device + " = " + statbuf + "\n")
         else:
             try:
-                f = open(dirFile+fileName,"w+")
-                f.write(time_log + " " + self.device + " = " + statbuf + "\n")
-            except Exception as e:
-                self.timerUpdate.stop()
-                self.showDialog("Diretório nao existe")
-                
+                log_file = open(dir_log_file+log_file_name,"w+")
+                log_file.write(time_log + " " + self.device + " = " + statbuf + "\n")
+            except Exception as exc_err:
+                self.timer_update.stop()
+                self.show_dialog("Diretório nao existe")
+                print(exc_err)
+
     #simple timer (1s)
-    def startTimer(self):
-        self.timerUpdate.stop()
-        self.timerUpdate.start(1000)      
+    def start_timer(self):
+        self.timer_update.stop()
+        self.timer_update.start(1000)
 
-    def showDialog(self, msgError):
-        msgBox = QtWidgets.QMessageBox()
-        msgBox.setIcon(QtWidgets.QMessageBox.Information)
-        msgBox.setText(msgError)
-        msgBox.setWindowTitle("Warning")
-        msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok)
-        msgBox.exec()
+    def show_dialog(self, msg_error):
+        """Simple dialog box"""
+        msg_box = QtWidgets.QMessageBox()
+        msg_box.setIcon(QtWidgets.QMessageBox.Information)
+        msg_box.setText(msg_error)
+        msg_box.setWindowTitle("Warning")
+        msg_box.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        msg_box.exec()
 
-    def closeEvent(self, event):
+    def close_event(self, event):
+        """shows a message to the user confirming closing application"""
         close = QMessageBox()
         close.setText("Are you sure?")
         close.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
         close = close.exec()
 
-        if close == QMessageBox.Yes:            
+        if close == QMessageBox.Yes:
+            self.disconnect_device()
             event.accept()
         else:
             event.ignore()

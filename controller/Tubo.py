@@ -12,9 +12,9 @@ class TuboControll(threading.Thread):
         #DOME 
         self.device = device      
 
-        self.result = self.comPorts()
+        self.result = self.com_ports()
 
-        self.errorDome = False
+        self.tubo_error = False
 
         if self.porta in self.result:
             self.ser = serial.Serial(
@@ -28,81 +28,81 @@ class TuboControll(threading.Thread):
                     self.ser.open()
                     self.ser.flushOutput()
                     self.ser.flushInput()
-                    self.errorDome = False
+                    self.tubo_error = False
                 except Exception as e:
-                    self.errorDome = True                    
+                    self.tubo_error = True                    
         else:
             print('Cannot connect to: ', self.porta)
-            self.errorDome = True
+            self.tubo_error = True
 
-    def closePort(self):
+    def close_port(self):
         if self.ser:
             self.ser.close()
 
-    def comPorts(self):
-            self.list = serial.tools.list_ports.comports()
+    def com_ports(self):
+            self.list = serial.tools.list_ports.com_ports()
             self.connected = []
             for element in self.list:
                 self.connected.append(element.device)
 
             return(self.connected)
 
-    def progStatus(self):    
-        if self.errorDome:
+    def prog_status(self):    
+        if self.tubo_error:
             return("+0 00 00.00 *0000000000000000")
         else:        
             try:  
-                ack = self.writeCommand(self.device+" PROG STATUS\r")
+                ack = self.write_cmd(self.device+" PROG STATUS\r")
 
                 if len(ack) > 2:
                     return(ack)    
                 else:
-                    print("ProgStatus bug")
+                    print("prog_status bug")
                     #print(ack)
                     return("+0 00 00.00 *0000000000000000")
             except Exception as e:
                 print(e)
                 return("+0 00 00.00 *0000000000000000")
 
-    def moveFoco(self, position):
-        if not self.errorDome:
-            ret = 'ACK' in self.writeCommand(self.device+" FOCO MOVER = " + str(position) + "\r")
+    def move_foco(self, position):
+        if not self.tubo_error:
+            ret = 'ACK' in self.write_cmd(self.device+" FOCO MOVER = " + str(position) + "\r")
             if ret:
                 stat = True
             else:
                 stat = False
             return stat        
 
-    def focoUp(self, position):
-        if not self.errorDome:
-            ret = 'ACK' in self.writeCommand(self.device+" FOCO AUMENTAR\r")
+    def foco_up(self):
+        if not self.tubo_error:
+            ret = 'ACK' in self.write_cmd(self.device+" FOCO AUMENTAR\r")
             if ret:
                 stat = True
             else:
                 stat = False
             return stat
     
-    def focodOWN(self, position):
-        if not self.errorDome:
-            ret = 'ACK' in self.writeCommand(self.device+" FOCO DIMINUIR\r")
+    def foco_down(self):
+        if not self.tubo_error:
+            ret = 'ACK' in self.write_cmd(self.device+" FOCO DIMINUIR\r")
             if ret:
                 stat = True
             else:
                 stat = False
             return stat
     
-    def focoRefPos(self, position):
-        if not self.errorDome:
-            ret = 'ACK' in self.writeCommand(self.device+" FOCO REFINAR+\r")
+    def foco_ref_pos(self):
+        if not self.tubo_error:
+            ret = 'ACK' in self.write_cmd(self.device+" FOCO REFINAR+\r")
             if ret:
                 stat = True
             else:
                 stat = False
             return stat
     
-    def focoRefNeg(self, position):
-        if not self.errorDome:
-            ret = 'ACK' in self.writeCommand(self.device+" FOCO REFINAR-\r")
+    def foco_ref_neg(self):
+        if not self.tubo_error:
+            ret = 'ACK' in self.write_cmd(self.device+" FOCO REFINAR-\r")
             if ret:
                 stat = True
             else:
@@ -111,142 +111,142 @@ class TuboControll(threading.Thread):
 
                     
     def prog_parar(self):
-        if not self.errorDome:
-            ret = 'ACK' in self.writeCommand(self.device+" FOCO PARAR\r")
+        if not self.tubo_error:
+            ret = 'ACK' in self.write_cmd(self.device+" FOCO PARAR\r")
             if ret:
                 stat = True
             else:
                 stat = False
             return stat
     
-    def lampNEON(self, position):
-        if not self.errorDome:
-            ret = 'ACK' in self.writeCommand(self.device+" LAMP_NE LIGAR\r")
+    def lamp_ne_on(self):
+        if not self.tubo_error:
+            ret = 'ACK' in self.write_cmd(self.device+" LAMP_NE LIGAR\r")
             if ret:
                 stat = True
             else:
                 stat = False
             return stat
     
-    def lampNEOFF(self, position):
-        if not self.errorDome:
-            ret = 'ACK' in self.writeCommand(self.device+" LAMP_NE DESLIGAR\r")
+    def lamp_ne_off(self):
+        if not self.tubo_error:
+            ret = 'ACK' in self.write_cmd(self.device+" LAMP_NE DESLIGAR\r")
             if ret:
                 stat = True
             else:
                 stat = False
             return stat
 
-    def lampHEON(self, position):
-        if not self.errorDome:
-            ret = 'ACK' in self.writeCommand(self.device+" LAMP_HE LIGAR\r")
+    def lamp_he_on(self):
+        if not self.tubo_error:
+            ret = 'ACK' in self.write_cmd(self.device+" LAMP_HE LIGAR\r")
             if ret:
                 stat = True
             else:
                 stat = False
             return stat
     
-    def lampHEOFF(self, position):
-        if not self.errorDome:
-            ret = 'ACK' in self.writeCommand(self.device+" LAMP_HE DESLIGAR\r")
+    def lamp_he_off(self):
+        if not self.tubo_error:
+            ret = 'ACK' in self.write_cmd(self.device+" LAMP_HE DESLIGAR\r")
             if ret:
                 stat = True
             else:
                 stat = False
             return stat
 
-    def esp_lamp_avanc(self, position):
-        if not self.errorDome:
-            ret = 'ACK' in self.writeCommand(self.device+" ESP_LAMP AVANCAR\r")
+    def esp_lamp_avanc(self):
+        if not self.tubo_error:
+            ret = 'ACK' in self.write_cmd(self.device+" ESP_LAMP AVANCAR\r")
             if ret:
                 stat = True
             else:
                 stat = False
             return stat
 
-    def esp_lamp_rec(self, position):
-        if not self.errorDome:
-            ret = 'ACK' in self.writeCommand(self.device+" ESP_LAMP RECUAR\r")
+    def esp_lamp_rec(self):
+        if not self.tubo_error:
+            ret = 'ACK' in self.write_cmd(self.device+" ESP_LAMP RECUAR\r")
             if ret:
                 stat = True
             else:
                 stat = False
             return stat
     
-    def esp_lamp_off(self, position):
-        if not self.errorDome:
-            ret = 'ACK' in self.writeCommand(self.device+" ESP_LAMP DESLIGAR\r")
+    def esp_lamp_off(self):
+        if not self.tubo_error:
+            ret = 'ACK' in self.write_cmd(self.device+" ESP_LAMP DESLIGAR\r")
             if ret:
                 stat = True
             else:
                 stat = False
             return stat
     
-    def espA(self, position):
-        if not self.errorDome:
-            ret = 'ACK' in self.writeCommand(self.device+" ESPELHO A\r")
+    def esp_a(self):
+        if not self.tubo_error:
+            ret = 'ACK' in self.write_cmd(self.device+" ESPELHO A\r")
             if ret:
                 stat = True
             else:
                 stat = False
             return stat
     
-    def espB(self, position):
-        if not self.errorDome:
-            ret = 'ACK' in self.writeCommand(self.device+" ESPELHO B\r")
+    def esp_b(self):
+        if not self.tubo_error:
+            ret = 'ACK' in self.write_cmd(self.device+" ESPELHO B\r")
             if ret:
                 stat = True
             else:
                 stat = False
             return stat
     
-    def espC(self, position):
-        if not self.errorDome:
-            ret = 'ACK' in self.writeCommand(self.device+" ESPELHO C\r")
+    def esp_c(self):
+        if not self.tubo_error:
+            ret = 'ACK' in self.write_cmd(self.device+" ESPELHO C\r")
             if ret:
                 stat = True
             else:
                 stat = False
             return stat
     
-    def rot_ler(self, position):
-        if not self.errorDome:
-            ret = 'ACK' in self.writeCommand(self.device+" ROTATOR LER\r")
+    def rot_ler(self):
+        if not self.tubo_error:
+            ret = 'ACK' in self.write_cmd(self.device+" ROTATOR LER\r")
             if ret:
                 stat = True
             else:
                 stat = False
             return stat
     
-    def rot_test(self, position):
-        if not self.errorDome:
-            ret = 'ACK' in self.writeCommand(self.device+" ROTATOR TESTAR\r")
+    def rot_test(self):
+        if not self.tubo_error:
+            ret = 'ACK' in self.write_cmd(self.device+" ROTATOR TESTAR\r")
             if ret:
                 stat = True
             else:
                 stat = False
             return stat
     
-    def vent_on(self, position):
-        if not self.errorDome:
-            ret = 'ACK' in self.writeCommand(self.device+" VENTILADOR LIGAR\r")
+    def vent_on(self):
+        if not self.tubo_error:
+            ret = 'ACK' in self.write_cmd(self.device+" VENTILADOR LIGAR\r")
             if ret:
                 stat = True
             else:
                 stat = False
             return stat
     
-    def vent_off(self, position):
-        if not self.errorDome:
-            ret = 'ACK' in self.writeCommand(self.device+" VENTILADOR DESLIGAR\r")
+    def vent_off(self):
+        if not self.tubo_error:
+            ret = 'ACK' in self.write_cmd(self.device+" VENTILADOR DESLIGAR\r")
             if ret:
                 stat = True
             else:
                 stat = False
             return stat
             
-    def writeCommand(self, cmd):
-        if not self.errorDome:
+    def write_cmd(self, cmd):
+        if not self.tubo_error:
             self.ser.flushOutput()
             self.ser.flushInput()
             self.ser.write(cmd.encode())

@@ -13,7 +13,7 @@ class DomeControll(threading.Thread):
         self.device = device      
         print(device)
 
-        self.result = self.comPorts()
+        self.result = self.com_ports()
 
         self.errorDome = False
 
@@ -36,114 +36,114 @@ class DomeControll(threading.Thread):
             print('Cannot connect to: ', self.porta)
             self.errorDome = True
 
-    def closePort(self):
+    def close_port(self):
         if self.ser:
             self.ser.close()
 
-    def comPorts(self):
-            self.list = serial.tools.list_ports.comports()
+    def com_ports(self):
+            self.list = serial.tools.list_ports.com_ports()
             self.connected = []
             for element in self.list:
                 self.connected.append(element.device)
 
             return(self.connected)
 
-    def progStatus(self): 
+    def prog_status(self): 
         if self.errorDome:
             return("+0 00 00.00 *0000000000000000")
         else:        
             try:  
-                ack = self.writeCommand(self.device+" PROG STATUS\r")
+                ack = self.write_cmd(self.device+" PROG STATUS\r")
 
                 if len(ack) > 2:
                     return(ack)    
                 else:
-                    print("ProgStatus bug")
+                    print("prog_status bug")
                     #print(ack)
                     return("+0 00 00.00 *0000000000000000")
             except Exception as e:
                 print(e)
                 return("+0 00 00.00 *0000000000000000")
 
-    def moveCup(self, position):
+    def move_cup(self, position):
         if not self.errorDome:
-            ret = 'ACK' in self.writeCommand(self.device+" DOMO MOVER = " + str(position) + "\r")
+            ret = 'ACK' in self.write_cmd(self.device+" DOMO MOVER = " + str(position) + "\r")
             if ret:
                 stat = True
             else:
                 stat = False
             return stat        
 
-    def openShutter(self):
+    def open_shutter(self):
         if not self.errorDome:
-            bitTrap = self.progStatus()[4]
+            bitTrap = self.prog_status()[4]
             if bitTrap == "1" :
-                ret = 'ACK' in self.writeCommand(self.device+" TRAPEIRA ABRIR\r")
+                ret = 'ACK' in self.write_cmd(self.device+" TRAPEIRA ABRIR\r")
                 if ret:
                     stat = True
                 else:
                     stat = False
                 return stat           
 
-    def CloseShutter(self):
+    def close_shutter(self):
         if not self.errorDome:
-            bitTrap = self.progStatus()[4]
+            bitTrap = self.prog_status()[4]
             if bitTrap == "1" :
-                ret = 'ACK' in self.writeCommand(self.device+" TRAPEIRA FECHAR\r")
+                ret = 'ACK' in self.write_cmd(self.device+" TRAPEIRA FECHAR\r")
                 if ret:
                     stat = True
                 else:
                     stat = False
                 return stat
 
-    def DomeCW(self):
+    def dome_cw(self):
         if not self.errorDome:
-            ret = 'ACK' in self.writeCommand(self.device+" DOMO GIRAR_CW\r")
+            ret = 'ACK' in self.write_cmd(self.device+" DOMO GIRAR_CW\r")
             if ret:
                 stat = True
             else:
                 stat = False
             return stat
 
-    def DomeCCW(self):
+    def dome_ccw(self):
         if not self.errorDome:
-            ret = 'ACK' in self.writeCommand(self.device+" DOMO GIRAR_CCW\r")
+            ret = 'ACK' in self.write_cmd(self.device+" DOMO GIRAR_CCW\r")
             if ret:
                 stat = True
             else:
                 stat = False
             return stat
 
-    def DomeJOG(self):
+    def dome_jog(self):
         if not self.errorDome:
-            ret = 'ACK' in self.writeCommand(self.device+" DOMO LIGAR_JOG\r")
+            ret = 'ACK' in self.write_cmd(self.device+" DOMO LIGAR_JOG\r")
             if ret:
                 stat = True
             else:
                 stat = False
             return stat
 
-    def DomeRAP(self):
+    def dome_rap(self):
         if not self.errorDome:
-            ret = 'ACK' in self.writeCommand(self.device+" DOMO LIGAR_RAP\r")
+            ret = 'ACK' in self.write_cmd(self.device+" DOMO LIGAR_RAP\r")
             if ret:
                 stat = True
             else:
                 stat = False
             return stat
 
-    def DomeFlatLampON(self):
+    def dome_flat_ligar(self):
         if not self.errorDome:
-            ret = 'ACK' in self.writeCommand(self.device+" FLAT_WEAK LIGAR\r")
+            ret = 'ACK' in self.write_cmd(self.device+" FLAT_WEAK LIGAR\r")
             if ret:
                 stat = True
             else:
                 stat = False
             return stat
             
-    def DomeFlatLampOFF(self):
+    def dome_flat_desligar(self):
         if not self.errorDome:
-            ret = 'ACK' in self.writeCommand(self.device+" FLAT_WEAK DESLIGAR\r")
+            ret = 'ACK' in self.write_cmd(self.device+" FLAT_WEAK DESLIGAR\r")
             if ret:
                 stat = True
             else:
@@ -152,7 +152,7 @@ class DomeControll(threading.Thread):
 
     def progErros(self):
         if not self.errorDome:
-            ret = 'ACK' in self.writeCommand(self.device+" PROG ERROS\r")
+            ret = 'ACK' in self.write_cmd(self.device+" PROG ERROS\r")
             if ret:
                 stat = True
             else:
@@ -161,14 +161,14 @@ class DomeControll(threading.Thread):
                     
     def prog_parar(self):
         if not self.errorDome:
-            ret = 'ACK' in self.writeCommand(self.device+" DOMO PARAR\r")
+            ret = 'ACK' in self.write_cmd(self.device+" DOMO PARAR\r")
             if ret:
                 stat = True
             else:
                 stat = False
             return stat
             
-    def writeCommand(self, cmd):
+    def write_cmd(self, cmd):
         if not self.errorDome:
             self.ser.flushOutput()
             self.ser.flushInput()
