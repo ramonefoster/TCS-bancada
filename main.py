@@ -51,7 +51,7 @@ class SettingsWindow(baseSettings, formSettings):
             self.boxBaund.setCurrentIndex(0)
 
         #butons
-        self.btnsave_settings.clicked.connect(self.save_settings)
+        self.btnSaveSettings.clicked.connect(self.save_settings)
         self.btnCancelSettings.clicked.connect(self.cancel_btn)
 
     def get_settings_values(self):
@@ -131,11 +131,11 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.btnMoveRel_2.clicked.connect(self.mover_rel)
 
         #Dome Buttons
-        self.btndome_cw.clicked.connect(self.dome_cw)
-        self.btndome_ccw.clicked.connect(self.dome_ccw)
-        self.btndome_stop.clicked.connect(self.dome_stop)
-        self.btndome_rap.clicked.connect(self.dome_rap)
-        self.btndome_jog.clicked.connect(self.dome_jog)
+        self.btnDomeCW.clicked.connect(self.dome_cw)
+        self.btnDomeCCW.clicked.connect(self.dome_ccw)
+        self.btnDomeStop.clicked.connect(self.dome_stop)
+        self.btnDomeRap.clicked.connect(self.dome_rap)
+        self.btnDomeJog.clicked.connect(self.dome_jog)
         self.btnDomeGo.clicked.connect(self.dome_move)
         self.btnShutter.clicked.connect(self.dome_shutter)
         self.btnLampON.clicked.connect(self.dome_flat_ligar)
@@ -163,9 +163,9 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
 
         #precess
         self.btnPrecess.clicked.connect(self.select_precess)
-        self.btnOpenbsc_file.clicked.connect(self.load_bsc_default)
+        self.btnOpenBSCfile.clicked.connect(self.load_bsc_default)
         self.btnPrecess_2.clicked.connect(self.select_precess)
-        self.btnOpenbsc_file_2.clicked.connect(self.load_bsc_default)
+        self.btnOpenBSCfile_2.clicked.connect(self.load_bsc_default)
 
     def open_settings(self):
         """open settings window"""
